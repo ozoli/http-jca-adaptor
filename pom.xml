@@ -205,7 +205,7 @@
          </executions>
          <configuration>
            <host>localhost</host>
-           <port>1400</port>
+           <port>10400</port>
              <!--<handler/>-->
          </configuration>
        </plugin>
