@@ -22,7 +22,6 @@
 package eu.luminis.httpjca;
 
 import java.util.UUID;
-import java.util.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.resource.ResourceException;
@@ -46,8 +45,6 @@ import static org.junit.Assert.*;
 @RunWith(Arquillian.class)
 public class ConnectorTestCase
 {
-   private static Logger log = Logger.getLogger(ConnectorTestCase.class.getName());
-
    private static String deploymentName = "ConnectorTestCase";
 
    /**

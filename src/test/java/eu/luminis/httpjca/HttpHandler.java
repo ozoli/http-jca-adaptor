@@ -25,6 +25,7 @@ import org.jboss.jca.test.eis.Handler;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Logger;
 
 /**
  * HttpHandler
@@ -34,12 +35,14 @@ import java.io.OutputStream;
 /** Echo handler */
 public class HttpHandler implements Handler
 {
-   /**
+  private static Logger log = Logger.getLogger(HttpHandler.class.getName());
+
+  /**
     * Default constructor
     */
    public HttpHandler()
    {
-
+      log.info("Constructed HttpHandler");
    }
 
    /**
@@ -47,7 +50,9 @@ public class HttpHandler implements Handler
     */
    public void handle(InputStream is, OutputStream os)
    {
-      // TODO: Implement me
+     log.info("handle called");
+     log.info("Input " + is.toString());
+     log.info("Output " + os.toString());
    }
 
 }

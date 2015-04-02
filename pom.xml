@@ -205,8 +205,8 @@
          </executions>
          <configuration>
            <host>localhost</host>
-           <port>10400</port>
-             <!--<handler/>-->
+             <port>1400</port>
+             <handler>eu.luminis.httpjca.HttpHandler</handler>
          </configuration>
        </plugin>
 
