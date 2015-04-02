@@ -205,7 +205,7 @@
          </executions>
          <configuration>
              <host>${ironjacamar.host}</host>
-             <port>1400</port>
+             <port>${ironjacamar.port}</port>
              <handler>eu.luminis.httpjca.HttpHandler</handler>
          </configuration>
        </plugin>
@@ -235,6 +235,7 @@
             </activation>
             <properties>
                 <ironjacamar.host>localhost</ironjacamar.host>
+                <ironjacamar.port>1400</ironjacamar.port>
             </properties>
         </profile>
         <profile>
@@ -242,6 +243,7 @@
             <properties>
                 <!-- The internal IP address on the OpenShift Jenkins instance. -->
                 <ironjacamar.host>${env.OPENSHIFT_JENKINS_IP}</ironjacamar.host>
+                <ironjacamar.port>15001</ironjacamar.port>
             </properties>
         </profile>
     </profiles>
