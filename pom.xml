@@ -243,7 +243,7 @@
             <properties>
                 <!-- The internal IP address on the OpenShift Jenkins instance. -->
                 <ironjacamar.host>${env.OPENSHIFT_JENKINS_IP}</ironjacamar.host>
-                <ironjacamar.port>15001</ironjacamar.port>
+                <ironjacamar.port>25001</ironjacamar.port>
             </properties>
         </profile>
     </profiles>
