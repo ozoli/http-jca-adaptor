@@ -204,12 +204,11 @@
            </execution>
          </executions>
          <configuration>
-           <host>localhost</host>
+             <host>${ironjacamar.host}</host>
              <port>1400</port>
              <handler>eu.luminis.httpjca.HttpHandler</handler>
          </configuration>
        </plugin>
-
     </plugins>
   </build> 
   
@@ -227,4 +226,23 @@
       <url>http://jesperpedersen.github.com/fungal/maven2</url>
     </repository>
   </repositories>
+    
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <ironjacamar.host>localhost</ironjacamar.host>
+            </properties>
+        </profile>
+        <profile>
+            <id>jenkins</id>
+            <properties>
+                <!-- The internal IP address on the OpenShift Jenkins instance. -->
+                <ironjacamar.host>${env.OPENSHIFT_JENKINS_IP}</ironjacamar.host>
+            </properties>
+        </profile>
+    </profiles>
 </project>
