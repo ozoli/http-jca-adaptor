@@ -183,9 +183,9 @@
            </execution>
          </executions>
          <configuration>
-           <host>localhost</host>
-           <port>1400</port>
-           <handler>eu.luminis.httpjca.HttpHandler</handler>
+             <host>${ironjacamar.host}</host>
+             <port>${ironjacamar.port}</port>
+             <handler>eu.luminis.httpjca.HttpHandler</handler>
            <classpath>
              <param>target/test-classes</param>
            </classpath>
