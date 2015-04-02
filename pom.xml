@@ -9,7 +9,7 @@
   <version>0.0.1-SNAPSHOT</version>
   <url>http://repository.jboss.org</url>
   <properties>
-    <version.org.jboss.ironjacamar>1.2.2.Final</version.org.jboss.ironjacamar>
+    <version.org.jboss.ironjacamar>1.2.3.Final</version.org.jboss.ironjacamar>
   </properties>
 
   <dependencies>
