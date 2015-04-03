@@ -12,6 +12,7 @@
             qualifier="wildfly-as-managed"
             default="true">
         <configuration>
+            <property name="managementAddress">${wildfly.host}</property>
             <property name="managementPort">29990</property>
         </configuration>
     </container>
