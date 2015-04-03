@@ -9,20 +9,38 @@
   <version>0.0.1-SNAPSHOT</version>
   <url>http://repository.jboss.org</url>
   <properties>
-    <version.org.jboss.ironjacamar>1.2.3.Final</version.org.jboss.ironjacamar>
+    <version.shrinkwrap.resolvers>2.0.0-alpha-1</version.shrinkwrap.resolvers>
   </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>1.1.4.Final</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    
   <dependencies>
-    <dependency>
-      <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-spec-api</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
-      <scope>provided</scope>
-    </dependency>
       <dependency>
           <groupId>org.jboss.spec.javax.resource</groupId>
           <artifactId>jboss-connector-api_1.6_spec</artifactId>
           <version>1.0.1.Final-redhat-2</version>
+          <scope>provided</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.jboss.spec.javax.transaction</groupId>
+          <artifactId>jboss-transaction-api_1.2_spec</artifactId>
+          <version>1.0.0.Final</version>
+          <scope>provided</scope>
+      </dependency>
+      <dependency>
+          <groupId>javax.validation</groupId>
+          <artifactId>validation-api</artifactId>
+          <version>1.0.0.GA</version>
       </dependency>
       <dependency>
           <groupId>org.apache.httpcomponents</groupId>
@@ -31,85 +49,55 @@
       </dependency>
 
       <!-- Test dependencies -->
-    <dependency>
-      <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-arquillian-embedded</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
-      <scope>test</scope>
-    </dependency>    
-    <dependency>
-      <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-arquillian-embedded-byteman</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
-      <scope>test</scope>
-    </dependency>    
-    <dependency>
-      <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-common-api</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
-      <scope>test</scope>
-    </dependency>    
-    <dependency>
-      <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-common-spi</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
-      <scope>test</scope>
-    </dependency>   
-    <dependency>
-      <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-common-impl</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
-      <scope>test</scope>
-    </dependency>    
-    <dependency>
-      <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-core-api</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
-      <scope>test</scope>
-    </dependency>    
-    <dependency>
-      <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-core-impl</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
-      <scope>test</scope>
-    </dependency>    
-    <dependency>
-      <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-depchain</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
-      <scope>test</scope>
-      <type>pom</type>
-    </dependency>   
-    <dependency>
-      <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-deployers-common</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
-      <scope>test</scope>
-    </dependency>    
-    <dependency>
-      <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-deployers-fungal</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
-      <scope>test</scope>
-    </dependency>    
-    <dependency>
-      <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-embedded</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
-      <scope>test</scope>
-    </dependency>    
-    <dependency>
-      <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-test-eis</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.ironjacamar</groupId>
-      <artifactId>ironjacamar-validator</artifactId>
-      <version>${version.org.jboss.ironjacamar}</version>
-      <scope>test</scope>
-    </dependency>
+      <!-- Arquillian test dependecies -->
+      <dependency>
+          <groupId>org.jboss.arquillian.junit</groupId>
+          <artifactId>arquillian-junit-container</artifactId>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.jboss.shrinkwrap.resolver</groupId>
+          <artifactId>shrinkwrap-resolver-api</artifactId>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.jboss.shrinkwrap.resolver</groupId>
+          <artifactId>shrinkwrap-resolver-spi</artifactId>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.jboss.shrinkwrap.resolver</groupId>
+          <artifactId>shrinkwrap-resolver-api-maven</artifactId>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.jboss.shrinkwrap.resolver</groupId>
+          <artifactId>shrinkwrap-resolver-spi-maven</artifactId>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.jboss.shrinkwrap.resolver</groupId>
+          <artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.jboss.shrinkwrap.resolver</groupId>
+          <artifactId>shrinkwrap-resolver-impl-maven-archive</artifactId>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.wildfly</groupId>
+          <artifactId>wildfly-arquillian-container-embedded</artifactId>
+          <version>8.1.0.Final</version>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.wildfly</groupId>
+          <artifactId>wildfly-embedded</artifactId>
+          <version>8.1.0.Final</version>
+          <scope>test</scope>
+      </dependency>
+
       <dependency>
           <groupId>junit</groupId>
           <artifactId>junit</artifactId>
@@ -117,18 +105,6 @@
           <scope>test</scope>
       </dependency>
   </dependencies>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.jboss.ironjacamar</groupId>
-        <artifactId>ironjacamar-depchain</artifactId>
-        <version>${version.org.jboss.ironjacamar}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
   
   <build>
     <sourceDirectory>src/main/java</sourceDirectory>
@@ -168,47 +144,51 @@
             <configuration>
               
             </configuration>
-        </execution></executions>
+          </execution>
+        </executions>
       </plugin>
-      
-       <plugin>
-         <groupId>org.jboss.ironjacamar</groupId>
-         <artifactId>ironjacamar-test-eis</artifactId>
-         <version>${version.org.jboss.ironjacamar}</version>
-         <executions>
-           <execution>
-             <goals>
-               <goal>start</goal>
-             </goals>
-           </execution>
-         </executions>
-         <configuration>
-             <host>${ironjacamar.host}</host>
-             <port>${ironjacamar.port}</port>
-             <handler>eu.luminis.httpjca.HttpHandler</handler>
-           <classpath>
-             <param>target/test-classes</param>
-           </classpath>
-         </configuration>
-       </plugin>
 
-       <plugin>
-         <groupId>org.jboss.ironjacamar</groupId>
-         <artifactId>ironjacamar-test-eis</artifactId>
-         <version>${version.org.jboss.ironjacamar}</version>
-         <executions>
-           <execution>
-             <goals>
-               <goal>stop</goal>
-             </goals>
-           </execution>
-         </executions>
-         <configuration>
-             <host>${ironjacamar.host}</host>
-             <port>${ironjacamar.port}</port>
-             <handler>eu.luminis.httpjca.HttpHandler</handler>
-         </configuration>
-       </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>2.8</version>
+            <executions>
+                <execution>
+                    <id>unpack</id>
+                    <phase>process-test-classes</phase>
+                    <goals>
+                        <goal>unpack</goal>
+                    </goals>
+                    <configuration>
+                        <artifactItems>
+                            <artifactItem>
+                                <groupId>org.wildfly</groupId>
+                                <artifactId>wildfly-dist</artifactId>
+                                <version>8.1.0.Final</version>
+                                <type>zip</type>
+                                <overWrite>false</overWrite>
+                                <outputDirectory>target</outputDirectory>
+                            </artifactItem>
+                        </artifactItems>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.17</version>
+          <configuration>
+          <!-- Fork every test because it will launch a separate AS instance -->
+          <forkMode>always</forkMode>
+          <systemPropertyVariables>
+              <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+              <!-- the maven dependency plugin will have already downloaded the server on /target -->
+              <jboss.home>${project.basedir}/target/wildfly-8.1.0.Final</jboss.home>
+              <module.path>${project.basedir}/target/wildfly-8.1.0.Final/modules</module.path>
+          </systemPropertyVariables>
+          <redirectTestOutputToFile>false</redirectTestOutputToFile>
+          </configuration>
+      </plugin>
     </plugins>
   </build> 
   
@@ -226,25 +206,5 @@
       <url>http://jesperpedersen.github.com/fungal/maven2</url>
     </repository>
   </repositories>
-    
-    <profiles>
-        <profile>
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <ironjacamar.host>localhost</ironjacamar.host>
-                <ironjacamar.port>1400</ironjacamar.port>
-            </properties>
-        </profile>
-        <profile>
-            <id>jenkins</id>
-            <properties>
-                <!-- The internal IP address on the OpenShift Jenkins instance. -->
-                <ironjacamar.host>${env.OPENSHIFT_JENKINS_IP}</ironjacamar.host>
-                <ironjacamar.port>25001</ironjacamar.port>
-            </properties>
-        </profile>
-    </profiles>
+
 </project>
