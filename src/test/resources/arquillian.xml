@@ -12,9 +12,6 @@
             qualifier="wildfly-as-managed"
             default="true">
         <configuration>
-            <property name="jboss.bind.address">${wildfly.host}</property>
-            <property name="jboss.bind.address.management">${wildfly.host}</property>
-            <property name="javaVmArguments">-Djboss.socket.binding.port-offset=20000</property>
             <property name="managementPort">29990</property>
         </configuration>
     </container>
