@@ -88,13 +88,13 @@
       <dependency>
           <groupId>org.wildfly</groupId>
           <artifactId>wildfly-arquillian-container-embedded</artifactId>
-          <version>8.1.0.Final</version>
+          <version>8.2.0.Final</version>
           <scope>test</scope>
       </dependency>
       <dependency>
           <groupId>org.wildfly</groupId>
           <artifactId>wildfly-embedded</artifactId>
-          <version>8.1.0.Final</version>
+          <version>8.2.0.Final</version>
           <scope>test</scope>
       </dependency>
 
@@ -172,7 +172,7 @@
                             <artifactItem>
                                 <groupId>org.wildfly</groupId>
                                 <artifactId>wildfly-dist</artifactId>
-                                <version>8.1.0.Final</version>
+                                <version>8.2.0.Final</version>
                                 <type>zip</type>
                                 <overWrite>false</overWrite>
                                 <outputDirectory>target</outputDirectory>
@@ -191,8 +191,8 @@
           <systemPropertyVariables>
               <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
               <!-- the maven dependency plugin will have already downloaded the server on /target -->
-              <jboss.home>${project.basedir}/target/wildfly-8.1.0.Final</jboss.home>
-              <module.path>${project.basedir}/target/wildfly-8.1.0.Final/modules</module.path>
+              <jboss.home>${project.basedir}/target/wildfly-8.2.0.Final</jboss.home>
+              <module.path>${project.basedir}/target/wildfly-8.2.0.Final/modules</module.path>
               <javaVmArguments>-Xms1024m -Xmx2048m -XX:PermSize=512M -XX:MaxPermSize=512 -XX:+CMSClassUnloadingEnabled</javaVmArguments>
               <arq.container.jboss.configuration.host>${wildfly.host}</arq.container.jboss.configuration.host>
               <arq.container.jboss.configuration.port>28080</arq.container.jboss.configuration.port>
