@@ -194,9 +194,10 @@
               <jboss.home>${project.basedir}/target/wildfly-8.1.0.Final</jboss.home>
               <module.path>${project.basedir}/target/wildfly-8.1.0.Final/modules</module.path>
               <javaVmArguments>-Xms1024m -Xmx2048m -XX:PermSize=512M -XX:MaxPermSize=512 -XX:+CMSClassUnloadingEnabled</javaVmArguments>
+              <arq.container.jboss.configuration.host>${wildfly.host}</arq.container.jboss.configuration.host>
+              <arq.container.jboss.configuration.port>28080</arq.container.jboss.configuration.port>
               <arq.container.jboss.configuration.managementHost>${wildfly.host}</arq.container.jboss.configuration.managementHost>
               <arq.container.jboss.configuration.managementPort>29990</arq.container.jboss.configuration.managementPort>
-              <org.jboss.as.client.connect.timeout>10000</org.jboss.as.client.connect.timeout>
               <jboss.socket.binding.port-offset>20000</jboss.socket.binding.port-offset>
               <jboss.bind.address>${wildfly.host}</jboss.bind.address>
               <jboss.bind.address.management>${wildfly.host}</jboss.bind.address.management>
