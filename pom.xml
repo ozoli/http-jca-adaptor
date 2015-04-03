@@ -185,15 +185,37 @@
               <!-- the maven dependency plugin will have already downloaded the server on /target -->
               <jboss.home>${project.basedir}/target/wildfly-8.1.0.Final</jboss.home>
               <module.path>${project.basedir}/target/wildfly-8.1.0.Final/modules</module.path>
-              <javaVmArguments>-Djboss.socket.binding.port-offset=20000 -Xmx512m -XX:MaxPermSize=128m</javaVmArguments>
-              <managementPort>29999</managementPort>
+              <javaVmArguments>-Xmx512m -XX:MaxPermSize=128m</javaVmArguments>
+              <managementPort>29990</managementPort>
+              <jboss.socket.binding.port-offset>20000</jboss.socket.binding.port-offset>
+              <jboss.bind.address>${wildfly.host}</jboss.bind.address>
+              <jboss.bind.address.management>${wildfly.host}</jboss.bind.address.management>
           </systemPropertyVariables>
           <redirectTestOutputToFile>false</redirectTestOutputToFile>
           </configuration>
       </plugin>
     </plugins>
-  </build> 
-  
+  </build>
+
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <wildfly.host>localhost</wildfly.host>
+            </properties>
+        </profile>
+        <profile>
+            <id>jenkins</id>
+            <properties>
+                <!-- The internal IP address on the OpenShift Jenkins instance. -->
+                <wildfly.host>${env.OPENSHIFT_JENKINS_IP}</wildfly.host>
+            </properties>
+        </profile>
+    </profiles>
+    
   <repositories>
     <repository>
       <id>jboss</id>
