@@ -185,6 +185,8 @@
               <!-- the maven dependency plugin will have already downloaded the server on /target -->
               <jboss.home>${project.basedir}/target/wildfly-8.1.0.Final</jboss.home>
               <module.path>${project.basedir}/target/wildfly-8.1.0.Final/modules</module.path>
+              <javaVmArguments>-Djboss.socket.binding.port-offset=20000 -Xmx512m -XX:MaxPermSize=128m</javaVmArguments>
+              <managementPort>29999</managementPort>
           </systemPropertyVariables>
           <redirectTestOutputToFile>false</redirectTestOutputToFile>
           </configuration>
