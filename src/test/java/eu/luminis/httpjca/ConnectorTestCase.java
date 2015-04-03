@@ -30,9 +30,12 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 
+import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.junit.Assert.*;
@@ -53,7 +56,7 @@ public class ConnectorTestCase
     * @return The deployment archive
     */
    @Deployment
-   public static ResourceAdapterArchive createDeployment()
+   public static EnterpriseArchive createDeployment()
    {
       ResourceAdapterArchive raa =
          ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName + ".rar");
@@ -63,17 +66,28 @@ public class ConnectorTestCase
 
       raa.addAsManifestResource("META-INF/ironjacamar.xml", "ironjacamar.xml");
 
-      return raa;
+     JavaArchive libjar = ShrinkWrap.create(JavaArchive.class, "lib.jar")
+         .addClasses(ConnectorTestCase.class)
+         .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
+
+     return ShrinkWrap.create(EnterpriseArchive.class, "test.ear")
+         .addAsModules(raa)
+         .addAsLibraries(libjar)
+         .addAsLibraries(
+             Maven.resolver().resolve("org.apache.httpcomponents:httpclient:4.4")
+                 .withTransitivity().asFile())
+         .addAsLibraries(
+             Maven.resolver().resolve("org.apache.httpcomponents:httpcore:4.4")
+                 .withTransitivity().asFile());
    }
 
    /** Resource */
    @Resource(mappedName = "java:/eis/HttpConnectionFactory")
-   private HttpConnectionFactory connectionFactory1;
-
+   private HttpConnectionFactory connectionFactory;
 
   @Test
   public void testNotNullConnectionFactory() throws ResourceException {
-    assertNotNull("connection factory should not be null", connectionFactory1);
-    assertNotNull("http connection should not be null", connectionFactory1.getConnection());
+    assertNotNull("connection factory should not be null", connectionFactory);
+    assertNotNull("http connection should not be null", connectionFactory.getConnection());
   }
 }

@@ -32,7 +32,9 @@
   <transaction-support>NoTransaction</transaction-support>
   
   <connection-definitions>
-    <connection-definition class-name="eu.luminis.httpjca.HttpManagedConnectionFactory" jndi-name="java:/eis/HttpConnectionFactory" pool-name="HttpConnectionFactory">
+    <connection-definition class-name="eu.luminis.httpjca.HttpManagedConnectionFactory" 
+                           jndi-name="java:/eis/HttpConnectionFactory" 
+                           pool-name="HttpConnectionFactory">
       <config-property name="host">localhost</config-property>
       <config-property name="port">8080</config-property>
       <config-property name="host">localhost</config-property>
