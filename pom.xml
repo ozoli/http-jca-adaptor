@@ -160,7 +160,7 @@
                     </goals>
                     <configuration>
                         <files>
-                            <file>${user.home}/config/wildfly-dev.properties</file>
+                            <file>${wildfly.config}/wildfly-dev.properties</file>
                         </files>
                     </configuration>
                 </execution>
@@ -185,7 +185,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <wildfly.config>${user.home}</wildfly.config>
+                <wildfly.config>${user.home}/config</wildfly.config>
             </properties>
         </profile>
         <profile>
