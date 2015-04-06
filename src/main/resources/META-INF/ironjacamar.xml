@@ -37,8 +37,6 @@
                            pool-name="HttpConnectionFactory">
       <config-property name="host">localhost</config-property>
       <config-property name="port">8080</config-property>
-      <config-property name="host">localhost</config-property>
-      <config-property name="port">1400</config-property>
     </connection-definition>
   </connection-definitions>
 
