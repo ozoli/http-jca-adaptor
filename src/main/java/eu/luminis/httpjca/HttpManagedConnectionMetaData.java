@@ -35,8 +35,11 @@ import javax.resource.spi.ManagedConnectionMetaData;
 public class HttpManagedConnectionMetaData implements ManagedConnectionMetaData
 {
    /** The logger */
-   private static Logger log = Logger.getLogger(HttpManagedConnectionMetaData.class.getName());
+   private static final Logger LOG = Logger.getLogger(HttpManagedConnectionMetaData.class.getName());
 
+   private static final String APACHE_HTTP_CLIENT = "Apache Http Client";
+   private static final String APACHE_HTTP_CLIENT_VERSION = "4.4";
+   
    /**
     * Default constructor
     */
@@ -54,8 +57,8 @@ public class HttpManagedConnectionMetaData implements ManagedConnectionMetaData
    @Override
    public String getEISProductName() throws ResourceException
    {
-      log.finest("getEISProductName()");
-      return null; //TODO
+      LOG.finest("getEISProductName()");
+      return APACHE_HTTP_CLIENT;
    }
 
    /**
@@ -67,8 +70,8 @@ public class HttpManagedConnectionMetaData implements ManagedConnectionMetaData
    @Override
    public String getEISProductVersion() throws ResourceException
    {
-      log.finest("getEISProductVersion()");
-      return null; //TODO
+      LOG.finest("getEISProductVersion()");
+      return APACHE_HTTP_CLIENT_VERSION;
    }
 
    /**
@@ -80,7 +83,7 @@ public class HttpManagedConnectionMetaData implements ManagedConnectionMetaData
    @Override
    public int getMaxConnections() throws ResourceException
    {
-      log.finest("getMaxConnections()");
+      LOG.finest("getMaxConnections()");
       return 0; //TODO
    }
 
@@ -93,9 +96,8 @@ public class HttpManagedConnectionMetaData implements ManagedConnectionMetaData
    @Override
    public String getUserName() throws ResourceException
    {
-      log.finest("getUserName()");
-      return null; //TODO
+      LOG.finest("getUserName() returning null");
+      return null;
    }
-
 
 }
