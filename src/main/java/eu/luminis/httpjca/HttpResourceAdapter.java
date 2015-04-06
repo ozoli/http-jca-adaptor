@@ -190,6 +190,8 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
        return false;
      } else if (other == this) {
        return true;
+     } else if (!(other instanceof HttpResourceAdapter)) {
+        return false;
      } else {
        HttpResourceAdapter otherHttpRA = (HttpResourceAdapter) other;
        return new EqualsBuilder().append(getHostUrl(), otherHttpRA.getHostUrl())

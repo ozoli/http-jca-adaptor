@@ -34,6 +34,13 @@ public class HttpResourceAdapterTest {
     assertNotEquals("expected not to be equal", 4, resourceAdapter);
     assertNotEquals("expected not to be equal", new HttpResourceAdapter(), resourceAdapter);
   }
+
+  @Test
+  public void testHashcode() {
+    assertEquals("expected equal", resourceAdapter.hashCode(), resourceAdapter.hashCode());
+    assertNotEquals("expected not to be equal", 4, resourceAdapter.hashCode());
+    assertNotEquals("expected not to be equal", new HttpResourceAdapter(), resourceAdapter.hashCode());
+  }
   
   @Test
   public void basicOperation() throws ResourceAdapterInternalException {
