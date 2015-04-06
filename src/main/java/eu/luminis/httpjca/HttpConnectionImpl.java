@@ -21,7 +21,11 @@
  */
 package eu.luminis.httpjca;
 
-import org.apache.http.*;
+import org.apache.http.HttpConnectionMetrics;
+import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpException;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
 
 import java.io.IOException;
 import java.util.logging.Logger;
