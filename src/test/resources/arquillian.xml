@@ -12,11 +12,6 @@
             qualifier="jboss-as7-remote"
             default="true">
         <configuration>
-            <property name="username">${wildfly.username}</property>
-            <property name="password">${wildfly.password}</property>
-            <property name="managementAddress">${wildfly.host}</property>
-            <property name="managementPort">${wildfly.port}</property>
-
             <property name="namespace">${wildfly.namespace}</property>
             <property name="application">${wildfly.application}</property>
             <property name="libraDomain">${wildfly.libraDomain}</property>
