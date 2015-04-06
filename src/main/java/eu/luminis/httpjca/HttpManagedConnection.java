@@ -49,11 +49,8 @@ import javax.transaction.xa.XAResource;
  */
 public class HttpManagedConnection implements ManagedConnection
 {
+   private static final Logger LOG = Logger.getLogger(HttpManagedConnection.class.getName());
 
-   /** The logger */
-   private static Logger log = Logger.getLogger(HttpManagedConnection.class.getName());
-
-   /** The logwriter */
    private PrintWriter logwriter;
 
    /** ManagedConnectionFactory */
@@ -90,10 +87,11 @@ public class HttpManagedConnection implements ManagedConnection
     * @return generic Object instance representing the connection handle. 
     * @throws ResourceException generic exception if operation fails
     */
+   @Override
    public Object getConnection(Subject subject,
       ConnectionRequestInfo cxRequestInfo) throws ResourceException
    {
-      log.finest("getConnection()");
+      LOG.finest("getConnection()");
       connection = new HttpConnectionImpl(this, mcf);
       return connection;
    }
@@ -105,17 +103,19 @@ public class HttpManagedConnection implements ManagedConnection
     * @param connection Application-level connection handle
     * @throws ResourceException generic exception if operation fails
     */
-   public void associateConnection(Object connection) throws ResourceException
+   @Override
+   public void associateConnection(final Object connection) throws ResourceException
    {
-      log.finest("associateConnection()");
+      LOG.finest("associateConnection()");
 
-      if (connection == null)
+      if (connection == null) {
+         LOG.severe("NULL connection passed to associateConnection()");
          throw new ResourceException("Null connection handle");
-
-      if (!(connection instanceof HttpConnectionImpl))
+      } else if (!(connection instanceof HttpConnectionImpl)) {
+         LOG.severe("Wrong type of connection passed to associateConnection");
          throw new ResourceException("Wrong connection handle");
-
-      this.connection = (HttpConnectionImpl)connection;
+      }
+      this.connection = (HttpConnectionImpl) connection;
    }
 
    /**
@@ -125,12 +125,13 @@ public class HttpManagedConnection implements ManagedConnection
     */
    public void cleanup() throws ResourceException
    {
-      log.finest("cleanup()");
+      LOG.finest("cleanup()");
       if (connection != null) {
         try {
           connection.flush();
         } catch (IOException e) {
-            throw new ResourceException(e);
+           LOG.throwing(HttpManagedConnection.class.getName(), "cleanup", e);
+           throw new ResourceException(e);
         }
       }
    }
@@ -142,7 +143,7 @@ public class HttpManagedConnection implements ManagedConnection
     */
    public void destroy() throws ResourceException
    {
-      log.finest("destroy()");
+      LOG.finest("destroy()");
 
       if (socket != null)
       {
@@ -166,9 +167,10 @@ public class HttpManagedConnection implements ManagedConnection
     */
    public void addConnectionEventListener(ConnectionEventListener listener)
    {
-      log.finest("addConnectionEventListener()");
-      if (listener == null)
+      LOG.finest("addConnectionEventListener()");
+      if (listener == null) {
          throw new IllegalArgumentException("Listener is null");
+      }
       listeners.add(listener);
    }
 
@@ -179,9 +181,11 @@ public class HttpManagedConnection implements ManagedConnection
     */
    public void removeConnectionEventListener(ConnectionEventListener listener)
    {
-      log.finest("removeConnectionEventListener()");
-      if (listener == null)
+      LOG.finest("removeConnectionEventListener()");
+      if (listener == null) {
+         LOG.severe("ConnectionEventListener is NULL");
          throw new IllegalArgumentException("Listener is null");
+      }
       listeners.remove(listener);
    }
 
@@ -194,7 +198,7 @@ public class HttpManagedConnection implements ManagedConnection
    {
       ConnectionEvent event = new ConnectionEvent(this, ConnectionEvent.CONNECTION_CLOSED);
       event.setConnectionHandle(handle);
-      for (ConnectionEventListener cel : listeners)
+      for (final ConnectionEventListener cel : listeners)
       {
          cel.connectionClosed(event);
       }
@@ -209,7 +213,7 @@ public class HttpManagedConnection implements ManagedConnection
     */
    public PrintWriter getLogWriter() throws ResourceException
    {
-      log.finest("getLogWriter()");
+      LOG.finest("getLogWriter()");
       return logwriter;
    }
 
@@ -221,7 +225,7 @@ public class HttpManagedConnection implements ManagedConnection
     */
    public void setLogWriter(PrintWriter out) throws ResourceException
    {
-      log.finest("setLogWriter()");
+      LOG.finest("setLogWriter()");
       logwriter = out;
    }
 
@@ -255,7 +259,7 @@ public class HttpManagedConnection implements ManagedConnection
     */
    public ManagedConnectionMetaData getMetaData() throws ResourceException
    {
-      log.finest("getMetaData()");
+      LOG.finest("getMetaData()");
       return new HttpManagedConnectionMetaData();
    }
 
