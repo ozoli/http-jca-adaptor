@@ -50,7 +50,11 @@ public class ConnectorTestCase
 {
    private static String deploymentName = "ConnectorTestCase";
 
-   /**
+  /** Resource */
+  @Resource(mappedName = "java:/eis/HttpConnectionFactory")
+  private HttpConnectionFactory connectionFactory;
+
+  /**
     * Define the deployment
     *
     * @return The deployment archive
@@ -80,10 +84,6 @@ public class ConnectorTestCase
              Maven.resolver().resolve("org.apache.httpcomponents:httpcore:4.4")
                  .withTransitivity().asFile());
    }
-
-   /** Resource */
-   @Resource(mappedName = "java:/eis/HttpConnectionFactory")
-   private HttpConnectionFactory connectionFactory;
 
   @Test
   public void testNotNullConnectionFactory() throws ResourceException {
