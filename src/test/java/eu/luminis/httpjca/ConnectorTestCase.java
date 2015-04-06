@@ -38,7 +38,8 @@ import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  * ConnectorTestCase
@@ -77,6 +78,9 @@ public class ConnectorTestCase
      return ShrinkWrap.create(EnterpriseArchive.class, "test.ear")
          .addAsModules(raa)
          .addAsLibraries(libjar)
+         .addAsLibraries(
+             Maven.resolver().resolve("org.apache.commons:commons-lang3:3.3.2")
+                 .withTransitivity().asFile())
          .addAsLibraries(
              Maven.resolver().resolve("org.apache.httpcomponents:httpclient:4.4")
                  .withTransitivity().asFile())
