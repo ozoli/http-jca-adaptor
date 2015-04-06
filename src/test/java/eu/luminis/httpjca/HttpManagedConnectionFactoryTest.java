@@ -1,10 +1,13 @@
 package eu.luminis.httpjca;
 
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.resource.ResourceException;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -18,6 +21,8 @@ import static org.junit.Assert.assertNotEquals;
 public class HttpManagedConnectionFactoryTest {
   
   private final HttpManagedConnectionFactory connectionFactory = new HttpManagedConnectionFactory();
+  
+  private final File logWritierFile = new File("aFile");
   
   @Before
   public void setup() {
@@ -48,8 +53,13 @@ public class HttpManagedConnectionFactoryTest {
   
   @Test
   public void testLogWriter() throws ResourceException, IOException {
-    PrintWriter writer = new PrintWriter(new FileWriter("aFile"));
+    PrintWriter writer = new PrintWriter(new FileWriter(logWritierFile));
     connectionFactory.setLogWriter(writer);
     assertEquals("expected same LogWriter", writer, connectionFactory.getLogWriter());
+  }
+
+  @After
+  public void cleanup() throws IOException {
+    FileUtils.deleteQuietly(logWritierFile);
   }
 }
