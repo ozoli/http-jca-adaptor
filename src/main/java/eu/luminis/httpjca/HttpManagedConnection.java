@@ -21,8 +21,6 @@
  */
 package eu.luminis.httpjca;
 
-import org.apache.http.*;
-import org.apache.http.impl.DefaultHttpRequestFactory;
 
 import java.io.IOException;
 import java.io.PrintWriter;
