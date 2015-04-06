@@ -38,7 +38,7 @@ public class HttpManagedConnectionFactoryTest {
     assertEquals("expected equal", connectionFactory.hashCode(), connectionFactory.hashCode());
     assertNotEquals("expected equal", new HttpManagedConnectionFactory().hashCode(), 
                                       connectionFactory.hashCode());
-    assertNotEquals("expected equal", 4, connectionFactory);
+    assertNotEquals("expected equal", 4, connectionFactory.hashCode());
   }
   
   @Test(expected = ResourceException.class)
