@@ -21,6 +21,9 @@
  */
 package eu.luminis.httpjca;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import java.util.logging.Logger;
 
 import javax.resource.ResourceException;
@@ -45,12 +48,11 @@ import javax.transaction.xa.XAResource;
    transactionSupport = TransactionSupport.TransactionSupportLevel.NoTransaction)
 public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializable
 {
-
    /** The serial version UID */
    private static final long serialVersionUID = 1L;
 
    /** The logger */
-   private static Logger log = Logger.getLogger(HttpResourceAdapter.class.getName());
+   private static final Logger LOG = Logger.getLogger(HttpResourceAdapter.class.getName());
 
    /** hostUrl */
    @ConfigProperty(defaultValue = "localhost")
@@ -114,7 +116,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
    public void endpointActivation(MessageEndpointFactory endpointFactory,
       ActivationSpec spec) throws ResourceException
    {
-      log.finest("endpointActivation()");
+      LOG.finest("endpointActivation()");
 
    }
 
@@ -127,8 +129,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
    public void endpointDeactivation(MessageEndpointFactory endpointFactory,
       ActivationSpec spec)
    {
-      log.finest("endpointDeactivation()");
-
+      LOG.finest("endpointDeactivation()");
    }
 
    /**
@@ -140,7 +141,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
    public void start(BootstrapContext ctx)
       throws ResourceAdapterInternalException
    {
-      log.finest("start()");
+      LOG.finest("start()");
 
    }
 
@@ -150,8 +151,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
     */
    public void stop()
    {
-      log.finest("stop()");
-
+      LOG.finest("stop()");
    }
 
    /**
@@ -164,7 +164,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
    public XAResource[] getXAResources(ActivationSpec[] specs)
       throws ResourceException
    {
-      log.finest("getXAResources()");
+      LOG.warning("getXAResources() returning NULL");
       return null;
    }
 
@@ -175,16 +175,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
    @Override
    public int hashCode()
    {
-      int result = 17;
-      if (hostUrl != null)
-         result += 31 * result + 7 * hostUrl.hashCode();
-      else
-         result += 31 * result + 7;
-      if (hostPort != null)
-         result += 31 * result + 7 * hostPort.hashCode();
-      else
-         result += 31 * result + 7;
-      return result;
+     return new HashCodeBuilder().append(hostUrl).append(hostPort).hashCode();
    }
 
    /** 
@@ -193,31 +184,17 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
     * @return true if this object is the same as the obj argument, false otherwise.
     */
    @Override
-   public boolean equals(Object other)
+   public boolean equals(final Object other)
    {
-      if (other == null)
-         return false;
-      if (other == this)
-         return true;
-      if (!(other instanceof HttpResourceAdapter))
-         return false;
-      boolean result = true;
-      HttpResourceAdapter obj = (HttpResourceAdapter)other;
-      if (result)
-      {
-         if (hostUrl == null)
-            result = obj.getHostUrl() == null;
-         else
-            result = hostUrl.equals(obj.getHostUrl());
-      }
-      if (result)
-      {
-         if (hostPort == null)
-            result = obj.getHostPort() == null;
-         else
-            result = hostPort.equals(obj.getHostPort());
-      }
-      return result;
+     if (other == null) {
+       return false;
+     } else if (other == this) {
+       return true;
+     } else {
+       HttpResourceAdapter otherHttpRA = (HttpResourceAdapter) other;
+       return new EqualsBuilder().append(getHostUrl(), otherHttpRA.getHostUrl())
+                                 .append(getHostPort(), otherHttpRA.getHostPort()).isEquals();
+     }
    }
 
 }
