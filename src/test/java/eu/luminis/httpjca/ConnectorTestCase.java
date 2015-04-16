@@ -23,6 +23,7 @@ package eu.luminis.httpjca;
 
 import java.io.IOException;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.resource.ResourceException;
@@ -58,11 +59,17 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Arquillian.class)
 public class ConnectorTestCase
 {
+  private static final Logger LOG = Logger.getLogger(ConnectorTestCase.class.getName());
+
   private static HttpServerBaseTest httpServerBaseTest;
+
+  private static String host = System.getProperty("undertow.http.host", "localhost");
+  private static int port = Integer.valueOf(System.getProperty("undertow.http.port", "8180"));
 
   @BeforeClass
   public static void setup() {
-    httpServerBaseTest = new HttpServerBaseTest("localhost", 8180);
+    LOG.info("Starting HTTP Server host " + host + ":" + port);
+    httpServerBaseTest = new HttpServerBaseTest(host, port);
     httpServerBaseTest.start();
   }
   
@@ -86,11 +93,11 @@ public class ConnectorTestCase
 
       raa.addAsManifestResource("META-INF/ironjacamar.xml", "ironjacamar.xml");
 
-     JavaArchive libjar = ShrinkWrap.create(JavaArchive.class, "lib.jar")
+      JavaArchive libjar = ShrinkWrap.create(JavaArchive.class, "lib.jar")
          .addClasses(ConnectorTestCase.class)
          .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
 
-     return ShrinkWrap.create(EnterpriseArchive.class, "test.ear")
+      return ShrinkWrap.create(EnterpriseArchive.class, "test.ear")
          .addAsModules(raa)
          .addAsLibraries(libjar)
          .addAsLibraries(
@@ -121,6 +128,6 @@ public class ConnectorTestCase
     
     assertEquals("expected 200 OK", 200, response.getStatusLine().getStatusCode());
     assertTrue("expected Hello World",
-          IOUtils.toString(response.getEntity().getContent()).contains("Hello World"));
+        IOUtils.toString(response.getEntity().getContent()).contains("Hello World"));
   }
 }

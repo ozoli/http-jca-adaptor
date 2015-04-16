@@ -12,8 +12,9 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <version.shrinkwrap.resolvers>2.0.0-alpha-1</version.shrinkwrap.resolvers>
     <wildfly.version>8.2.0.Final</wildfly.version>
+    <undertow.http.host>localhost</undertow.http.host>
+    <undertow.http.port>8180</undertow.http.port>
   </properties>
-
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -213,6 +214,9 @@
                     <jboss.home>${project.basedir}/target/wildfly-${wildfly.version}</jboss.home>
                     <module.path>${project.basedir}/target/wildfly-${wildfly.version}/modules</module.path>
                     <javaVmArguments>-Xms1024m -Xmx2048m -XX:PermSize=512M -XX:MaxPermSize=512 -XX:+CMSClassUnloadingEnabled</javaVmArguments>
+
+                    <undertow.http.host>${undertow.http.host}</undertow.http.host>
+                    <undertow.http.port>${undertow.http.port}</undertow.http.port>
                 </systemPropertyVariables>
             </configuration>
         </plugin>
@@ -231,7 +235,7 @@
                 </execution>
             </executions>
         </plugin>
-        <!-- Use -DrepoToken=<yourCoverallsRepoTokenId on the command line -->
+        <!-- Use -DrepoToken=<yourCoverallsRepoTokenId> on the command line -->
         <plugin>
             <groupId>org.eluder.coveralls</groupId>
             <artifactId>coveralls-maven-plugin</artifactId>
