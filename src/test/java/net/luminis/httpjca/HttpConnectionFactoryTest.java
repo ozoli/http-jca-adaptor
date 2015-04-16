@@ -1,4 +1,4 @@
-package eu.luminis.httpjca;
+package net.luminis.httpjca;
 
 import org.junit.Test;
 

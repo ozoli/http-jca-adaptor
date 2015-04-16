@@ -19,17 +19,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package eu.luminis.httpjca;
+package net.luminis.httpjca;
+
+import java.io.Serializable;
+
+import javax.resource.Referenceable;
+import javax.resource.ResourceException;
 
 /**
- * HttpConnection
+ * HttpConnectionFactory
  *
  * @version $Revision: $
  */
-public interface HttpConnection extends org.apache.http.HttpClientConnection {
-
-   /**
-    * Close
+public interface HttpConnectionFactory extends Serializable, Referenceable
+{
+   /** 
+    * Get connection from factory
+    *
+    * @return HttpConnection instance
+    * @exception ResourceException Thrown if a connection can't be obtained
     */
-   public void close();
+   HttpConnection getConnection() throws ResourceException;
+
 }

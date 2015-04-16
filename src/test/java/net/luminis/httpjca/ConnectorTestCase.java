@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package eu.luminis.httpjca;
+package net.luminis.httpjca;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -88,7 +88,7 @@ public class ConnectorTestCase
       ResourceAdapterArchive raa =
          ShrinkWrap.create(ResourceAdapterArchive.class, "ConnectorTestCase.rar");
       JavaArchive ja = ShrinkWrap.create(JavaArchive.class, UUID.randomUUID().toString() + ".jar");
-      ja.addPackages(true, Package.getPackage("eu.luminis.httpjca"));
+      ja.addPackages(true, Package.getPackage(HttpConnection.class.getPackage().getName()));
       raa.addAsLibrary(ja);
 
       raa.addAsManifestResource("META-INF/ironjacamar.xml", "ironjacamar.xml");

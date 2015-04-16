@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package eu.luminis.httpjca;
+package net.luminis.httpjca;
 
 import javax.resource.cci.ResourceAdapterMetaData;
 
