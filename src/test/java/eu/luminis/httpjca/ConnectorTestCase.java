@@ -21,11 +21,17 @@
  */
 package eu.luminis.httpjca;
 
+import java.io.IOException;
 import java.util.UUID;
 
 import javax.annotation.Resource;
 import javax.resource.ResourceException;
 
+import io.undetow.server.HttpServerBaseTest;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpException;
+import org.apache.http.HttpResponse;
+import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 
@@ -36,10 +42,13 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * ConnectorTestCase
@@ -49,12 +58,18 @@ import static org.junit.Assert.assertNotNull;
 @RunWith(Arquillian.class)
 public class ConnectorTestCase
 {
-   private static String deploymentName = "ConnectorTestCase";
+  private static HttpServerBaseTest httpServerBaseTest;
 
+  @BeforeClass
+  public static void setup() {
+    httpServerBaseTest = new HttpServerBaseTest("localhost", 8180);
+    httpServerBaseTest.start();
+  }
+  
   /** Resource */
   @Resource(mappedName = "java:/eis/HttpConnectionFactory")
   private HttpConnectionFactory connectionFactory;
-
+  
   /**
     * Define the deployment
     *
@@ -64,7 +79,7 @@ public class ConnectorTestCase
    public static EnterpriseArchive createDeployment()
    {
       ResourceAdapterArchive raa =
-         ShrinkWrap.create(ResourceAdapterArchive.class, deploymentName + ".rar");
+         ShrinkWrap.create(ResourceAdapterArchive.class, "ConnectorTestCase.rar");
       JavaArchive ja = ShrinkWrap.create(JavaArchive.class, UUID.randomUUID().toString() + ".jar");
       ja.addPackages(true, Package.getPackage("eu.luminis.httpjca"));
       raa.addAsLibrary(ja);
@@ -93,5 +108,19 @@ public class ConnectorTestCase
   public void testNotNullConnectionFactory() throws ResourceException {
     assertNotNull("connection factory should not be null", connectionFactory);
     assertNotNull("http connection should not be null", connectionFactory.getConnection());
+  }
+  
+  @Test
+  public void testGet() throws ResourceException, IOException, HttpException {
+    HttpConnection connection = connectionFactory.getConnection();
+    assertNotNull("http connection should not be null", connection);
+    
+    connection.sendRequestEntity(new BasicHttpEntityEnclosingRequest("GET", "http://localhost:8180"));
+    
+    HttpResponse response = connection.receiveResponseHeader();
+    
+    assertEquals("expected 200 OK", 200, response.getStatusLine().getStatusCode());
+    assertTrue("expected Hello World",
+          IOUtils.toString(response.getEntity().getContent()).contains("Hello World"));
   }
 }
