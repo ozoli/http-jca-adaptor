@@ -21,7 +21,6 @@
  */
 package net.luminis.httpjca;
 
-import java.io.IOException;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -30,7 +29,6 @@ import javax.resource.ResourceException;
 
 import io.undetow.server.HttpServerBaseTest;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpException;
 import org.apache.http.HttpResponse;
 import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -47,9 +45,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * ConnectorTestCase
@@ -118,16 +114,43 @@ public class ConnectorTestCase
   }
   
   @Test
-  public void testGet() throws ResourceException, IOException, HttpException {
+  public void testGet() throws Exception {
     HttpConnection connection = connectionFactory.getConnection();
     assertNotNull("http connection should not be null", connection);
     
-    connection.sendRequestEntity(new BasicHttpEntityEnclosingRequest("GET", "http://"+ host + ":" + port));
-    
+    connection.sendRequestEntity(createRequestEntity());
     HttpResponse response = connection.receiveResponseHeader();
     
     assertEquals("expected 200 OK", 200, response.getStatusLine().getStatusCode());
     assertTrue("expected Hello World",
         IOUtils.toString(response.getEntity().getContent()).contains("Hello World"));
+
+    assertTrue("expect isOpen", connection.isOpen());
+    assertFalse("expect isFalse", connection.isStale());
+    connection.flush();
+    connection.close();
+  }
+
+  @Test
+  public void testShutdown() throws Exception {
+    HttpConnection connection = connectionFactory.getConnection();
+
+    connection.sendRequestEntity(createRequestEntity());
+    HttpResponse response = connection.receiveResponseHeader();
+
+    assertEquals("expected 200 OK", 200, response.getStatusLine().getStatusCode());
+
+    connection.shutdown();
+  }
+  
+  @Test
+  public void testSocketTimeout() throws Exception {
+    HttpConnection connection = connectionFactory.getConnection();
+    connection.setSocketTimeout(2000);
+    assertEquals("incorrect socket timeout", 2000, connection.getSocketTimeout());
+  }
+
+  private BasicHttpEntityEnclosingRequest createRequestEntity() {
+    return new BasicHttpEntityEnclosingRequest("GET", "http://" + host + ":" + port);
   }
 }
