@@ -36,19 +36,14 @@ import javax.resource.spi.ConnectionManager;
  */
 public class HttpConnectionFactoryImpl implements HttpConnectionFactory
 {
-   /** The serial version UID */
    private static final long serialVersionUID = 1L;
 
-   /** The logger */
-   private static Logger log = Logger.getLogger(HttpConnectionFactoryImpl.class.getName());
+   private static final Logger LOG = Logger.getLogger(HttpConnectionFactoryImpl.class.getName());
 
-   /** Reference */
    private Reference reference;
 
-   /** ManagedConnectionFactory */
    private HttpManagedConnectionFactory mcf;
 
-   /** ConnectionManager */
    private ConnectionManager connectionManager;
 
    /**
@@ -79,7 +74,7 @@ public class HttpConnectionFactoryImpl implements HttpConnectionFactory
    @Override
    public HttpConnection getConnection() throws ResourceException
    {
-      log.finest("getConnection()");
+      LOG.finest("getConnection()");
       return (HttpConnection)connectionManager.allocateConnection(mcf, null);
    }
 
@@ -92,7 +87,7 @@ public class HttpConnectionFactoryImpl implements HttpConnectionFactory
    @Override
    public Reference getReference() throws NamingException
    {
-      log.finest("getReference()");
+      LOG.finest("getReference()");
       return reference;
    }
 
@@ -104,7 +99,7 @@ public class HttpConnectionFactoryImpl implements HttpConnectionFactory
    @Override
    public void setReference(Reference reference)
    {
-      log.finest("setReference()");
+      LOG.finest("setReference()");
       this.reference = reference;
    }
 
