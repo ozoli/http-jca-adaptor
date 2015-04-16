@@ -122,7 +122,7 @@ public class ConnectorTestCase
     HttpConnection connection = connectionFactory.getConnection();
     assertNotNull("http connection should not be null", connection);
     
-    connection.sendRequestEntity(new BasicHttpEntityEnclosingRequest("GET", "http://localhost:8180"));
+    connection.sendRequestEntity(new BasicHttpEntityEnclosingRequest("GET", "http://"+ host + ":" + port));
     
     HttpResponse response = connection.receiveResponseHeader();
     
