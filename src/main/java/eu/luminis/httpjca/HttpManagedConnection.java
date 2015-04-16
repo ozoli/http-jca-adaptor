@@ -22,12 +22,15 @@
 package eu.luminis.httpjca;
 
 
+import org.apache.http.HttpClientConnection;
+import org.apache.http.util.EntityUtils;
+
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import javax.resource.NotSupportedException;
@@ -62,22 +65,33 @@ public class HttpManagedConnection implements ManagedConnection
    /** Connection */
    private HttpConnectionImpl connection;
 
-   /** Socket */
-   private Socket socket;
+   /**
+    * The underlying {@link HttpClientConnection}.
+    */
+   private HttpClientConnection httpClientConnection;
 
    /**
     * Default constructor
     * @param mcf mcf
+    * @param httpConnection HTTP Connection
     */
-   public HttpManagedConnection(HttpManagedConnectionFactory mcf) throws ResourceException
+   public HttpManagedConnection(HttpManagedConnectionFactory mcf, HttpClientConnection httpConnection)
+       throws ResourceException
    {
       this.mcf = mcf;
       this.logwriter = null;
       this.listeners = Collections.synchronizedList(new ArrayList<ConnectionEventListener>(1));
-      this.connection = null;
-      this.socket = null; // TODO: Initialize me
+      this.httpClientConnection = httpConnection;
+      this.connection = new HttpConnectionImpl(this, mcf);
    }
 
+   /**
+    * @return the underlying {@link org.apache.http.HttpClientConnection}
+    */
+   org.apache.http.HttpClientConnection getHttpConnection() {
+      return httpClientConnection;
+   }
+   
    /**
     * Creates a new connection handle for the underlying physical connection 
     * represented by the ManagedConnection instance. 
@@ -129,6 +143,7 @@ public class HttpManagedConnection implements ManagedConnection
       if (connection != null) {
         try {
           connection.flush();
+          consumeHttpResponseEntity();
         } catch (IOException e) {
            LOG.throwing(HttpManagedConnection.class.getName(), "cleanup", e);
            throw new ResourceException(e);
@@ -144,20 +159,14 @@ public class HttpManagedConnection implements ManagedConnection
    public void destroy() throws ResourceException
    {
       LOG.finest("destroy()");
+      consumeHttpResponseEntity();
+      mcf.getHttpClientConnectionManager().releaseConnection(httpClientConnection, null, 1, TimeUnit.SECONDS);
+   }
 
-      if (socket != null)
-      {
-         try
-         {
-            socket.close();
-         }
-         catch (IOException ioe)
-         {
-            // Ignore
-         }
-
+   private void consumeHttpResponseEntity() {
+      if (connection.getHttpResponse() != null) {
+         EntityUtils.consumeQuietly(connection.getHttpResponse().getEntity());
       }
-
    }
 
    /**

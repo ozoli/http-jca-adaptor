@@ -37,8 +37,7 @@ import java.util.logging.Logger;
  */
 public class HttpConnectionImpl implements HttpConnection
 {
-   /** The logger */
-   private static Logger log = Logger.getLogger(HttpConnectionImpl.class.getName());
+   private static final Logger LOG = Logger.getLogger(HttpConnectionImpl.class.getName());
 
    /** ManagedConnection */
    private HttpManagedConnection mc;
@@ -46,11 +45,14 @@ public class HttpConnectionImpl implements HttpConnection
    /** ManagedConnectionFactory */
    private HttpManagedConnectionFactory mcf;
 
-   private org.apache.http.impl.DefaultHttpClientConnection httpClientConnection;
+  /**
+   * local reference top the {@link HttpResponse} to make sure it is consumed correctly. 
+   */
+  private HttpResponse httpResponse;
+  
    /**
     * Default constructor
     * @param mc HttpManagedConnection
-    * @param mcf HttpManagedConnectionFactory
     */
    public HttpConnectionImpl(HttpManagedConnection mc, HttpManagedConnectionFactory mcf)
    {
@@ -63,67 +65,77 @@ public class HttpConnectionImpl implements HttpConnection
     */
    public void close()
    {
-      mc.closeHandle(this);
+     LOG.fine("Closing HttpConnection"); 
+     mc.closeHandle(this);
    }
 
   @Override
   public boolean isOpen() {
-    return httpClientConnection.isOpen();
+    return mc.getHttpConnection().isOpen();
   }
 
   @Override
   public boolean isStale() {
-    return httpClientConnection.isStale();
+    return mc.getHttpConnection().isStale();
   }
 
   @Override
-  public void setSocketTimeout(int i) {
-    httpClientConnection.setSocketTimeout(i);
+  public void setSocketTimeout(int timeout) {
+    mc.getHttpConnection().setSocketTimeout(timeout);
   }
 
   @Override
   public int getSocketTimeout() {
-    return httpClientConnection.getSocketTimeout();
+    return mc.getHttpConnection().getSocketTimeout();
   }
 
   @Override
   public void shutdown() throws IOException {
-    httpClientConnection.shutdown();
+    LOG.fine("shutdown HttpConnection");
+    mc.getHttpConnection().shutdown();
   }
 
   @Override
   public HttpConnectionMetrics getMetrics() {
-    return httpClientConnection.getMetrics();
+    return mc.getHttpConnection().getMetrics();
   }
 
   @Override
   public boolean isResponseAvailable(int i) throws IOException {
-    return httpClientConnection.isResponseAvailable(i);
+    return mc.getHttpConnection().isResponseAvailable(i);
   }
 
   @Override
   public void sendRequestHeader(HttpRequest httpRequest) throws HttpException, IOException {
-    httpClientConnection.sendRequestHeader(httpRequest);
+    mc.getHttpConnection().sendRequestHeader(httpRequest);
   }
 
   @Override
   public void sendRequestEntity(HttpEntityEnclosingRequest httpEntityEnclosingRequest) 
       throws HttpException, IOException {
-    httpClientConnection.sendRequestEntity(httpEntityEnclosingRequest);
+    mc.getHttpConnection().sendRequestEntity(httpEntityEnclosingRequest);
   }
 
   @Override
   public HttpResponse receiveResponseHeader() throws HttpException, IOException {
-    return httpClientConnection.receiveResponseHeader();
+    httpResponse = mc.getHttpConnection().receiveResponseHeader();
+    return httpResponse;
   }
 
   @Override
   public void receiveResponseEntity(HttpResponse httpResponse) throws HttpException, IOException {
-    httpClientConnection.receiveResponseEntity(httpResponse);
+    mc.getHttpConnection().receiveResponseEntity(httpResponse);
   }
 
   @Override
   public void flush() throws IOException {
-    httpClientConnection.flush();
+    mc.getHttpConnection().flush();
+  }
+
+  /**
+   * @return the {@link HttpResponse} so it can be consumed if necessary.
+   */
+  HttpResponse getHttpResponse() {
+    return httpResponse;
   }
 }

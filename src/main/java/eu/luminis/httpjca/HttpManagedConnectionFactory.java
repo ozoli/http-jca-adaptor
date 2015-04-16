@@ -23,11 +23,20 @@ package eu.luminis.httpjca;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.http.HttpClientConnection;
+import org.apache.http.HttpHost;
+import org.apache.http.conn.ConnectionPoolTimeoutException;
+import org.apache.http.conn.ConnectionRequest;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.routing.HttpRoute;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 
 import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.Set;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import javax.resource.ResourceException;
@@ -68,12 +77,16 @@ public class HttpManagedConnectionFactory implements ManagedConnectionFactory, R
    private Integer port;
 
    /**
+    * Basic Http Connection Pool for the {@link HttpManagedConnection}s.
+    */
+   private final BasicHttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager();
+
+   /**
     * Default constructor
     */
    public HttpManagedConnectionFactory() {
-
    }
-
+   
    /**
     * Set host
     * @param host The value
@@ -141,7 +154,15 @@ public class HttpManagedConnectionFactory implements ManagedConnectionFactory, R
    public ManagedConnection createManagedConnection(Subject subject,
                                                     ConnectionRequestInfo cxRequestInfo) throws ResourceException {
       LOG.finest("createManagedConnection()");
-      return new HttpManagedConnection(this);
+      final HttpRoute httpRoute = new HttpRoute(new HttpHost(host, port));
+      final ConnectionRequest connRequest = connectionManager.requestConnection(httpRoute, null);
+      try {
+         HttpClientConnection conn = connRequest.get(1000, TimeUnit.SECONDS);
+         return new HttpManagedConnection(this, conn);
+      } catch (final ConnectionPoolTimeoutException | ExecutionException | InterruptedException e) {
+         LOG.throwing(getClass().getName(), "createManagedConnection", e);
+         throw new ResourceException(e);
+      }
    }
 
    /**
@@ -242,5 +263,12 @@ public class HttpManagedConnectionFactory implements ManagedConnectionFactory, R
              .append(getPort(), managedConnection.getPort())
              .append(getResourceAdapter(), managedConnection.getResourceAdapter()).isEquals();
       }
+   }
+
+   /**
+    * @return the {@link HttpClientConnectionManager} so connections can be released.
+    */
+   HttpClientConnectionManager getHttpClientConnectionManager() {
+      return connectionManager;
    }
 }
