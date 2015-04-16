@@ -103,5 +103,4 @@ public class HttpConnectionFactoryImpl implements HttpConnectionFactory
       this.reference = reference;
    }
 
-
 }
