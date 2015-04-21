@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Unit test for the {@link HttpManagedConnectionFactory} class.
@@ -57,9 +58,15 @@ public class HttpManagedConnectionFactoryTest {
     connectionFactory.setLogWriter(writer);
     assertEquals("expected same LogWriter", writer, connectionFactory.getLogWriter());
   }
+  
+  @Test
+  public void getClientHttpConnectionFactory() {
+    assertNotNull("Client HTTP factory should not be null", connectionFactory.getHttpClientConnectionManager());
+  }
 
   @After
   public void cleanup() throws IOException {
     FileUtils.deleteQuietly(logWritierFile);
+    connectionFactory.getHttpClientConnectionManager().shutdown();
   }
 }
