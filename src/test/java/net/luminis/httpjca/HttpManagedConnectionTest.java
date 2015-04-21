@@ -9,10 +9,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import javax.resource.ResourceException;
+import javax.resource.spi.ConnectionEvent;
+import javax.resource.spi.ConnectionEventListener;
 import javax.resource.spi.ManagedConnectionMetaData;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -41,5 +45,47 @@ public class HttpManagedConnectionTest {
   public void testMetaData() throws ResourceException {
     ManagedConnectionMetaData metaData = managedConnection.getMetaData();
     assertTrue("MetaData is of wrong type", metaData instanceof HttpManagedConnectionMetaData);
+  }
+  
+  @Test
+  public void testCleanup() throws ResourceException {
+    managedConnection.cleanup();
+  }
+  
+  @Test
+  public void testConnectionEventListener() throws IOException {
+    ConnectionEventListener listener = new TestConnectionEventListener();
+    managedConnection.addConnectionEventListener(listener);
+    assertFalse("connection should not be open",
+        managedConnection.getHttpConnection().isOpen());
+    managedConnection.removeConnectionEventListener(listener);
+  }
+  
+  class TestConnectionEventListener implements ConnectionEventListener {
+
+    @Override
+    public void connectionClosed(ConnectionEvent event) {
+      
+    }
+
+    @Override
+    public void localTransactionStarted(ConnectionEvent event) {
+
+    }
+
+    @Override
+    public void localTransactionCommitted(ConnectionEvent event) {
+
+    }
+
+    @Override
+    public void localTransactionRolledback(ConnectionEvent event) {
+
+    }
+
+    @Override
+    public void connectionErrorOccurred(ConnectionEvent event) {
+
+    }
   }
 }
