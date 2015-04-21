@@ -141,6 +141,33 @@ public class ConnectorTestCase
   }
 
   @Test
+  public void testBadGet() throws Exception {
+    HttpConnection connection = connectionFactory.getConnection();
+    assertNotNull("http connection should not be null", connection);
+
+    connection.sendRequestEntity(
+        new BasicHttpEntityEnclosingRequest("GET", "http://silly.host:98"));
+    HttpResponse response = connection.receiveResponseHeader();
+
+    assertEquals("expected 404", 404, response.getStatusLine().getStatusCode());
+
+    assertTrue("expect isOpen", connection.isOpen());
+    assertFalse("expect isFalse", connection.isStale());
+
+    assertNotNull("expect metrics not null", connection.getMetrics());
+    assertTrue("expect at least one request",
+        connection.getMetrics().getRequestCount() > 0);
+    assertTrue("expect some received bytes",
+        connection.getMetrics().getReceivedBytesCount() > 0);
+    assertTrue("expect at least one response",
+        connection.getMetrics().getResponseCount() > 0);
+    assertTrue("expect some sent bytes",
+        connection.getMetrics().getSentBytesCount() > 0);
+    connection.flush();
+    connection.close();
+  }
+  
+  @Test
   public void testShutdown() throws Exception {
     HttpConnection connection = connectionFactory.getConnection();
 
