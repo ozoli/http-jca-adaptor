@@ -44,26 +44,27 @@ import javax.transaction.xa.XAResource;
  * @version $Revision: $
  */
 @Connector(
-   reauthenticationSupport = false,
-   transactionSupport = TransactionSupport.TransactionSupportLevel.NoTransaction)
+    description = "HTTP Resource Adapter using the Apache HttpConnection API",
+    displayName = "HttpResourceAdapter",
+    vendorName = "Luminis",
+    eisType = "HTTP",
+    version = "0.0.1",
+    reauthenticationSupport = false,
+    transactionSupport = TransactionSupport.TransactionSupportLevel.NoTransaction)
 public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializable
 {
-   /** The serial version UID */
    private static final long serialVersionUID = 1L;
 
-   /** The logger */
    private static final Logger LOG = Logger.getLogger(HttpResourceAdapter.class.getName());
 
-   /** hostUrl */
    @ConfigProperty(defaultValue = "localhost")
    private String hostUrl;
 
-   /** hostPort */
    @ConfigProperty(defaultValue = "8080")
    private Integer hostPort;
 
    /**
-    * Default constructor
+    * Default constructor, needed for JCA specification compliance.
     */
    public HttpResourceAdapter()
    {
@@ -72,7 +73,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
 
    /** 
     * Set hostUrl
-    * @param hostUrl The value
+    * @param hostUrl The host URL to use
     */
    public void setHostUrl(String hostUrl)
    {
@@ -81,7 +82,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
 
    /** 
     * Get hostUrl
-    * @return The value
+    * @return The host URL
     */
    public String getHostUrl()
    {
@@ -90,7 +91,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
 
    /** 
     * Set hostPort
-    * @param hostPort The value
+    * @param hostPort The HTTP port
     */
    public void setHostPort(Integer hostPort)
    {
@@ -99,7 +100,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
 
    /** 
     * Get hostPort
-    * @return The value
+    * @return The HTTP port
     */
    public Integer getHostPort()
    {
@@ -141,7 +142,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
    public void start(BootstrapContext ctx)
       throws ResourceAdapterInternalException
    {
-      LOG.finest("start()");
+      LOG.info("start()");
 
    }
 
@@ -151,7 +152,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
     */
    public void stop()
    {
-      LOG.finest("stop()");
+      LOG.info("stop()");
    }
 
    /**
