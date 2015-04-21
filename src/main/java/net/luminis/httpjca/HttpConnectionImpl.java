@@ -129,7 +129,9 @@ public class HttpConnectionImpl implements HttpConnection
 
   @Override
   public void flush() throws IOException {
-    mc.getHttpConnection().flush();
+    if (mc.getHttpConnection().isOpen()) {
+      mc.getHttpConnection().flush();
+    }
   }
 
   /**
