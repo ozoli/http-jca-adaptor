@@ -15,9 +15,7 @@ import javax.resource.spi.ManagedConnectionMetaData;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * Unit test for {@link HttpManagedConnection}.
@@ -27,7 +25,7 @@ public class HttpManagedConnectionTest {
   private HttpManagedConnection managedConnection;
   
   private BasicHttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager();
-  
+
   @Before
   public void setup() throws Exception {
     ConnectionRequest request = connectionManager.requestConnection(
@@ -48,27 +46,57 @@ public class HttpManagedConnectionTest {
   }
   
   @Test
-  public void testGetConnection() throws ResourceException {
-    org.apache.http.HttpConnection connection = 
+  public void testGetConnection() throws ResourceException, IOException, HttpException {
+    org.apache.http.HttpConnection connection =
         (org.apache.http.HttpConnection) managedConnection.getConnection(null, null);
     assertNotNull("HTTP Connection should not be null", connection);
 
     HttpConnection httpConnection = (HttpConnection) managedConnection.getConnection(null, null);
     assertNotNull("HTTP Connection should not be null", httpConnection);
-    httpConnection.close();
+    assertNotNull("HTTP Connection Metrics should not be null", httpConnection.getMetrics());
+  }
+
+  @Test(expected = ResourceException.class)
+  public void associateConnectionNull() throws ResourceException {
+    managedConnection.associateConnection(null);
+  }
+
+  @Test(expected = ResourceException.class)
+  public void associateConnectionInteger() throws ResourceException {
+    managedConnection.associateConnection(Integer.valueOf(2));
+  }
+
+  @Test
+  public void associateConnection() throws ResourceException {
+    HttpConnection httpConnection = (HttpConnection) managedConnection.getConnection(null, null);
+    managedConnection.associateConnection(httpConnection);
   }
 
   @Test
   public void testCleanup() throws ResourceException {
     managedConnection.cleanup();
   }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testAddNulConnectionListener() throws IllegalArgumentException {
+    managedConnection.addConnectionEventListener(null);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testRemoveNulConnectionListener() throws IllegalArgumentException {
+    managedConnection.removeConnectionEventListener(null);
+  }
   
   @Test
-  public void testConnectionEventListener() throws IOException {
+  public void testConnectionEventListener() throws IOException, ResourceException {
     ConnectionEventListener listener = new TestConnectionEventListener();
     managedConnection.addConnectionEventListener(listener);
     assertFalse("connection should not be open",
         managedConnection.getHttpConnection().isOpen());
+
+    HttpConnection httpConnection = (HttpConnection) managedConnection.getConnection(null, null);
+    managedConnection.closeHandle(httpConnection);
+
     managedConnection.removeConnectionEventListener(listener);
   }
   
