@@ -69,7 +69,6 @@ public class ConnectorTestCase
     httpServerBaseTest.start();
   }
   
-  /** Resource */
   @Resource(mappedName = "java:/eis/HttpConnectionFactory")
   private HttpConnectionFactory connectionFactory;
   
@@ -127,6 +126,16 @@ public class ConnectorTestCase
 
     assertTrue("expect isOpen", connection.isOpen());
     assertFalse("expect isFalse", connection.isStale());
+
+    assertNotNull("expect metrics not null", connection.getMetrics());
+    assertTrue("expect at least one request",
+        connection.getMetrics().getRequestCount() > 0);
+    assertTrue("expect some received bytes",
+        connection.getMetrics().getReceivedBytesCount() > 0);
+    assertTrue("expect at least one response",
+        connection.getMetrics().getResponseCount() > 0);
+    assertTrue("expect some sent bytes",
+        connection.getMetrics().getSentBytesCount() > 0);
     connection.flush();
     connection.close();
   }
