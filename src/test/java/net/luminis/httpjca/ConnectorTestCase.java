@@ -71,7 +71,10 @@ public class ConnectorTestCase
   
   @Resource(mappedName = "java:/eis/HttpConnectionFactory")
   private HttpConnectionFactory connectionFactory;
-  
+
+  @Resource
+  private HttpManagedConnectionFactory managedConnectionFactory;
+
   /**
     * Define the deployment
     *
@@ -109,15 +112,30 @@ public class ConnectorTestCase
   @Test
   public void testNotNullConnectionFactory() throws ResourceException {
     assertNotNull("connection factory should not be null", connectionFactory);
-    assertNotNull("http connection should not be null", connectionFactory.getConnection());
   }
-  
+
+  @Test
+  public void testManagedConnectionFactory() throws ResourceException {
+    assertNotNull("managed connection factory should not be null", managedConnectionFactory);
+    assertNotNull("expected ResourceAdapter", managedConnectionFactory.getResourceAdapter());
+    assertTrue("expected HttpResourceAdapter",
+        managedConnectionFactory.getResourceAdapter() instanceof HttpResourceAdapter);
+  }
+
+  @Test
+  public void testHttpConnectionClass() throws ResourceException {
+    assertNotNull("http connection should not be null", connectionFactory.getConnection());
+    assertTrue("http connection should instance of HttpConnectionImpl",
+        connectionFactory.getConnection() instanceof HttpConnectionImpl);
+  }
+
   @Test
   public void testGet() throws Exception {
     HttpConnection connection = connectionFactory.getConnection();
     assertNotNull("http connection should not be null", connection);
     
     connection.sendRequestEntity(createRequestEntity());
+    assertTrue("response should be available", connection.isResponseAvailable(1000));
     HttpResponse response = connection.receiveResponseHeader();
     
     assertEquals("expected 200 OK", 200, response.getStatusLine().getStatusCode());
@@ -125,7 +143,7 @@ public class ConnectorTestCase
         IOUtils.toString(response.getEntity().getContent()).contains("Hello World"));
 
     assertTrue("expect isOpen", connection.isOpen());
-    assertFalse("expect isFalse", connection.isStale());
+    assertFalse("expected not isStale", connection.isStale());
 
     assertNotNull("expect metrics not null", connection.getMetrics());
     assertTrue("expect at least one request",
@@ -147,12 +165,13 @@ public class ConnectorTestCase
 
     connection.sendRequestEntity(
         new BasicHttpEntityEnclosingRequest("GET", "http://silly.host:98"));
+    assertTrue("response should be available", connection.isResponseAvailable(1000));
     HttpResponse response = connection.receiveResponseHeader();
 
     assertEquals("expected 404", 404, response.getStatusLine().getStatusCode());
 
     assertTrue("expect isOpen", connection.isOpen());
-    assertFalse("expect isFalse", connection.isStale());
+    assertFalse("expect not isStale", connection.isStale());
 
     assertNotNull("expect metrics not null", connection.getMetrics());
     assertTrue("expect at least one request",
