@@ -1,7 +1,6 @@
 package net.luminis.httpjca;
 
-import org.apache.http.HttpClientConnection;
-import org.apache.http.HttpHost;
+import org.apache.http.*;
 import org.apache.http.conn.ConnectionRequest;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
@@ -17,6 +16,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -47,6 +47,17 @@ public class HttpManagedConnectionTest {
     assertTrue("MetaData is of wrong type", metaData instanceof HttpManagedConnectionMetaData);
   }
   
+  @Test
+  public void testGetConnection() throws ResourceException {
+    org.apache.http.HttpConnection connection = 
+        (org.apache.http.HttpConnection) managedConnection.getConnection(null, null);
+    assertNotNull("HTTP Connection should not be null", connection);
+
+    HttpConnection httpConnection = (HttpConnection) managedConnection.getConnection(null, null);
+    assertNotNull("HTTP Connection should not be null", httpConnection);
+    httpConnection.close();
+  }
+
   @Test
   public void testCleanup() throws ResourceException {
     managedConnection.cleanup();
