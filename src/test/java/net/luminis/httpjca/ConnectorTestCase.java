@@ -22,12 +22,10 @@
 package net.luminis.httpjca;
 
 import java.util.UUID;
-import java.util.logging.Logger;
 
 import javax.annotation.Resource;
 import javax.resource.ResourceException;
 
-import io.undetow.server.HttpServerBaseTest;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.message.BasicHttpEntityEnclosingRequest;
@@ -41,6 +39,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 
 import org.jboss.shrinkwrap.resolver.api.maven.Maven;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,20 +52,12 @@ import static org.junit.Assert.*;
  * @version $Revision: $
  */
 @RunWith(Arquillian.class)
-public class ConnectorTestCase
+public class ConnectorTestCase extends HttpServerBase
 {
-  private static final Logger LOG = Logger.getLogger(ConnectorTestCase.class.getName());
-
-  private static HttpServerBaseTest httpServerBaseTest;
-
-  private static String host = System.getProperty("undertow.http.host", "localhost");
-  private static int port = Integer.valueOf(System.getProperty("undertow.http.port", "8180"));
-
   @BeforeClass
   public static void setup() {
-    LOG.info("Starting HTTP Server host " + host + ":" + port);
-    httpServerBaseTest = new HttpServerBaseTest(host, port);
-    httpServerBaseTest.start();
+    buildHttpServer();
+    startHttpServer();
   }
   
   @Resource(mappedName = "java:/eis/HttpConnectionFactory")
@@ -98,6 +89,9 @@ public class ConnectorTestCase
       return ShrinkWrap.create(EnterpriseArchive.class, "test.ear")
          .addAsModules(raa)
          .addAsLibraries(libjar)
+         .addAsLibraries(
+             Maven.resolver().resolve("io.undertow:undertow-core:1.1.3.Final")
+                 .withTransitivity().asFile())
          .addAsLibraries(
              Maven.resolver().resolve("org.apache.commons:commons-lang3:3.3.2")
                  .withTransitivity().asFile())
@@ -134,7 +128,7 @@ public class ConnectorTestCase
     HttpConnection connection = connectionFactory.getConnection();
     assertNotNull("http connection should not be null", connection);
     
-    connection.sendRequestEntity(createRequestEntity());
+    connection.sendRequestEntity(createGetRequestEntity());
     assertTrue("response should be available", connection.isResponseAvailable(1000));
     HttpResponse response = connection.receiveResponseHeader();
     
@@ -190,7 +184,7 @@ public class ConnectorTestCase
   public void testShutdown() throws Exception {
     HttpConnection connection = connectionFactory.getConnection();
 
-    connection.sendRequestEntity(createRequestEntity());
+    connection.sendRequestEntity(createGetRequestEntity());
     HttpResponse response = connection.receiveResponseHeader();
 
     assertEquals("expected 200 OK", 200, response.getStatusLine().getStatusCode());
@@ -205,7 +199,8 @@ public class ConnectorTestCase
     assertEquals("incorrect socket timeout", 2000, connection.getSocketTimeout());
   }
 
-  private BasicHttpEntityEnclosingRequest createRequestEntity() {
-    return new BasicHttpEntityEnclosingRequest("GET", "http://" + host + ":" + port);
+  @AfterClass
+  public static void shutdown() {
+    stopHttpServer();
   }
 }
