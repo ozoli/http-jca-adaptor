@@ -36,7 +36,9 @@ public class HttpManagedConnectionFactoryTest {
   public void testEquals() {
     assertEquals("expected equal", connectionFactory, connectionFactory);
     assertNotEquals("expected not equal", null, connectionFactory);
+    assertNotEquals("expected not equal", connectionFactory, null);
     assertNotEquals("expected not equal", 4, connectionFactory);
+    assertNotEquals("expected not equal", connectionFactory, 4);
     assertNotEquals("expected not equal", new HttpManagedConnectionFactory(), connectionFactory);
   }
 
