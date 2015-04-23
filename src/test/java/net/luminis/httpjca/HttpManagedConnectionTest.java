@@ -1,10 +1,14 @@
 package net.luminis.httpjca;
 
+import net.luminis.httpjca.util.HttpServerBase;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.*;
-import org.apache.http.conn.ConnectionRequest;
-import org.apache.http.conn.routing.HttpRoute;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.resource.ResourceException;
@@ -13,25 +17,29 @@ import javax.resource.spi.ConnectionEventListener;
 import javax.resource.spi.ManagedConnectionMetaData;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
 /**
  * Unit test for {@link HttpManagedConnection}.
  */
-public class HttpManagedConnectionTest {
+public class HttpManagedConnectionTest extends HttpServerBase {
   
   private HttpManagedConnection managedConnection;
   
-  private BasicHttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager();
+  private HttpConnection connection;
+  private CloseableHttpClient client = HttpClients.custom().setConnectionManager(
+      new BasicHttpClientConnectionManager()).build();
 
+  @BeforeClass
+  public static void start() {
+    buildHttpServer();
+    startHttpServer();
+  }
+     
   @Before
   public void setup() throws Exception {
-    ConnectionRequest request = connectionManager.requestConnection(
-        new HttpRoute(new HttpHost("localhost", 8080)), null);
-    HttpClientConnection connection = request.get(100, TimeUnit.SECONDS);
-    managedConnection = new HttpManagedConnection(new HttpManagedConnectionFactory(), connection);
+    managedConnection = new HttpManagedConnection(new HttpManagedConnectionFactory(), client);
   }
 
   @Test(expected = ResourceException.class)
@@ -43,17 +51,6 @@ public class HttpManagedConnectionTest {
   public void testMetaData() throws ResourceException {
     ManagedConnectionMetaData metaData = managedConnection.getMetaData();
     assertTrue("MetaData is of wrong type", metaData instanceof HttpManagedConnectionMetaData);
-  }
-  
-  @Test
-  public void testGetConnection() throws ResourceException, IOException, HttpException {
-    org.apache.http.HttpConnection connection =
-        (org.apache.http.HttpConnection) managedConnection.getConnection(null, null);
-    assertNotNull("HTTP Connection should not be null", connection);
-
-    HttpConnection httpConnection = (HttpConnection) managedConnection.getConnection(null, null);
-    assertNotNull("HTTP Connection should not be null", httpConnection);
-    assertNotNull("HTTP Connection Metrics should not be null", httpConnection.getMetrics());
   }
 
   @Test(expected = ResourceException.class)
@@ -70,6 +67,24 @@ public class HttpManagedConnectionTest {
   public void associateConnection() throws ResourceException {
     HttpConnection httpConnection = (HttpConnection) managedConnection.getConnection(null, null);
     managedConnection.associateConnection(httpConnection);
+  }
+
+  @Test
+  public void testGet() throws Exception {
+    Object object = managedConnection.getConnection(null, null);
+    assertTrue("incorrect HttpConnection class", object instanceof HttpConnection);
+    assertTrue("incorrect HttpConnectionImpl class", object instanceof HttpConnectionImpl);
+    connection = (HttpConnectionImpl) object;
+    assertNotNull("http connection should not be null", connection);
+
+    HttpHost target = new HttpHost(host, port);
+    HttpResponse response = connection.execute(target, createGetRequestEntity());
+
+    assertEquals("expected 200 OK", 200, response.getStatusLine().getStatusCode());
+    assertTrue("expected Hello World",
+        IOUtils.toString(response.getEntity().getContent()).contains("Hello World"));
+
+    connection.close();
   }
 
   @Test
@@ -91,8 +106,6 @@ public class HttpManagedConnectionTest {
   public void testConnectionEventListener() throws IOException, ResourceException {
     ConnectionEventListener listener = new TestConnectionEventListener();
     managedConnection.addConnectionEventListener(listener);
-    assertFalse("connection should not be open",
-        managedConnection.getHttpConnection().isOpen());
 
     HttpConnection httpConnection = (HttpConnection) managedConnection.getConnection(null, null);
     managedConnection.closeHandle(httpConnection);
@@ -126,5 +139,10 @@ public class HttpManagedConnectionTest {
     public void connectionErrorOccurred(ConnectionEvent event) {
 
     }
+  }
+  
+  @AfterClass
+  public static void stop() {
+    stopHttpServer();
   }
 }

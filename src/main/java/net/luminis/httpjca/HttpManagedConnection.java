@@ -23,6 +23,8 @@ package net.luminis.httpjca;
 
 
 import org.apache.http.HttpClientConnection;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
@@ -30,7 +32,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import javax.resource.NotSupportedException;
@@ -68,28 +69,28 @@ public class HttpManagedConnection implements ManagedConnection
    /**
     * The underlying {@link HttpClientConnection}.
     */
-   private HttpClientConnection httpClientConnection;
+   private CloseableHttpClient httpClient;
 
    /**
     * Default constructor
     * @param mcf mcf
-    * @param httpConnection HTTP Connection
+    * @param httpClient HTTP Client underlying
     */
-   public HttpManagedConnection(HttpManagedConnectionFactory mcf, HttpClientConnection httpConnection)
+   public HttpManagedConnection(HttpManagedConnectionFactory mcf, CloseableHttpClient httpClient)
        throws ResourceException
    {
       this.mcf = mcf;
       this.logwriter = null;
       this.listeners = Collections.synchronizedList(new ArrayList<ConnectionEventListener>(1));
-      this.httpClientConnection = httpConnection;
+      this.httpClient = httpClient;
       this.connection = new HttpConnectionImpl(this, mcf);
    }
 
    /**
     * @return the underlying {@link org.apache.http.HttpClientConnection}
     */
-   org.apache.http.HttpClientConnection getHttpConnection() {
-      return httpClientConnection;
+   HttpClient getHttpClient() {
+      return httpClient;
    }
    
    /**
@@ -141,13 +142,7 @@ public class HttpManagedConnection implements ManagedConnection
    {
       LOG.finest("cleanup()");
       if (connection != null) {
-        try {
-          connection.flush();
           consumeHttpResponseEntity();
-        } catch (IOException e) {
-           LOG.throwing(HttpManagedConnection.class.getName(), "cleanup", e);
-           throw new ResourceException(e);
-        }
       }
    }
 
@@ -160,7 +155,12 @@ public class HttpManagedConnection implements ManagedConnection
    {
       LOG.finest("destroy()");
       consumeHttpResponseEntity();
-      mcf.getHttpClientConnectionManager().releaseConnection(httpClientConnection, null, 1, TimeUnit.SECONDS);
+      try {
+         httpClient.close();
+      } catch (IOException e) {
+         LOG.throwing(HttpManagedConnection.class.getName(), "destroy()", e);
+         throw new ResourceException(e);
+      }
    }
 
    private void consumeHttpResponseEntity() {
@@ -199,19 +199,18 @@ public class HttpManagedConnection implements ManagedConnection
    }
 
    /**
-    * Close handle
+    * Close connection
     *
-    * @param handle The handle
+    * @param connection The connection
     */
-   void closeHandle(HttpConnection handle)
+   void closeHandle(HttpConnection connection)
    {
       ConnectionEvent event = new ConnectionEvent(this, ConnectionEvent.CONNECTION_CLOSED);
-      event.setConnectionHandle(handle);
+      event.setConnectionHandle(connection);
       for (final ConnectionEventListener cel : listeners)
       {
          cel.connectionClosed(event);
       }
-
    }
 
    /**

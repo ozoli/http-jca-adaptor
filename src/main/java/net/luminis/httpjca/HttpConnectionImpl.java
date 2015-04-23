@@ -21,11 +21,14 @@
  */
 package net.luminis.httpjca;
 
-import org.apache.http.HttpConnectionMetrics;
-import org.apache.http.HttpEntityEnclosingRequest;
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
+import org.apache.http.*;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.params.HttpParams;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -49,13 +52,12 @@ public class HttpConnectionImpl implements HttpConnection
    * local reference top the {@link HttpResponse} to make sure it is consumed correctly. 
    */
   private HttpResponse httpResponse;
-  
+
    /**
     * Default constructor
     * @param mc HttpManagedConnection
     */
-   public HttpConnectionImpl(HttpManagedConnection mc, HttpManagedConnectionFactory mcf)
-   {
+   public HttpConnectionImpl(HttpManagedConnection mc, HttpManagedConnectionFactory mcf) {
       this.mc = mc;
       this.mcf = mcf;
    }
@@ -63,81 +65,104 @@ public class HttpConnectionImpl implements HttpConnection
    /**
     * Close
     */
-   public void close()
-   {
-     LOG.fine("Closing HttpConnection"); 
+   public void close() {
+     LOG.fine("Closing HttpConnection");
+     if (httpResponse != null) {
+       EntityUtils.consumeQuietly(httpResponse.getEntity());
+     }
      mc.closeHandle(this);
    }
-
-  @Override
-  public boolean isOpen() {
-    return mc.getHttpConnection().isOpen();
-  }
-
-  @Override
-  public boolean isStale() {
-    return mc.getHttpConnection().isStale();
-  }
-
-  @Override
-  public void setSocketTimeout(int timeout) {
-    mc.getHttpConnection().setSocketTimeout(timeout);
-  }
-
-  @Override
-  public int getSocketTimeout() {
-    return mc.getHttpConnection().getSocketTimeout();
-  }
-
-  @Override
-  public void shutdown() throws IOException {
-    LOG.fine("shutdown HttpConnection");
-    mc.getHttpConnection().shutdown();
-  }
-
-  @Override
-  public HttpConnectionMetrics getMetrics() {
-    return mc.getHttpConnection().getMetrics();
-  }
-
-  @Override
-  public boolean isResponseAvailable(int i) throws IOException {
-    return mc.getHttpConnection().isResponseAvailable(i);
-  }
-
-  @Override
-  public void sendRequestHeader(HttpRequest httpRequest) throws HttpException, IOException {
-    mc.getHttpConnection().sendRequestHeader(httpRequest);
-  }
-
-  @Override
-  public void sendRequestEntity(HttpEntityEnclosingRequest httpEntityEnclosingRequest) 
-      throws HttpException, IOException {
-    mc.getHttpConnection().sendRequestEntity(httpEntityEnclosingRequest);
-  }
-
-  @Override
-  public HttpResponse receiveResponseHeader() throws HttpException, IOException {
-    httpResponse = mc.getHttpConnection().receiveResponseHeader();
-    return httpResponse;
-  }
-
-  @Override
-  public void receiveResponseEntity(HttpResponse httpResponse) throws HttpException, IOException {
-    mc.getHttpConnection().receiveResponseEntity(httpResponse);
-  }
-
-  @Override
-  public void flush() throws IOException {
-    if (mc.getHttpConnection().isOpen()) {
-      mc.getHttpConnection().flush();
-    }
-  }
 
   /**
    * @return the {@link HttpResponse} so it can be consumed if necessary.
    */
   HttpResponse getHttpResponse() {
     return httpResponse;
+  }
+
+  @Override
+  public HttpParams getParams() {
+    return mc.getHttpClient().getParams();
+  }
+
+  @Override
+  public ClientConnectionManager getConnectionManager() {
+    return mc.getHttpClient().getConnectionManager();
+  }
+
+  @Override
+  public HttpResponse execute(HttpUriRequest request) throws IOException, ClientProtocolException {
+    httpResponse = mc.getHttpClient().execute(request);
+    return httpResponse;
+  }
+
+  @Override
+  public HttpResponse execute(HttpUriRequest request, HttpContext context)
+      throws IOException, ClientProtocolException {
+    httpResponse = mc.getHttpClient().execute(request, context);
+    return httpResponse;
+  }
+
+  @Override
+  public HttpResponse execute(HttpHost target, HttpRequest request) throws IOException, ClientProtocolException {
+    httpResponse = mc.getHttpClient().execute(target, request);
+    return httpResponse;
+  }
+
+  @Override
+  public HttpResponse execute(HttpHost target, HttpRequest request, HttpContext context)
+      throws IOException, ClientProtocolException {
+    httpResponse = mc.getHttpClient().execute(target, request, context);
+    return httpResponse;
+  }
+
+  @Override
+  public <T> T execute(HttpUriRequest request, ResponseHandler<? extends T> responseHandler)
+      throws IOException, ClientProtocolException {
+    HttpConnectionResponseHandler<T> handler = new HttpConnectionResponseHandler<T>(responseHandler);
+    return mc.getHttpClient().execute(request, handler);
+  }
+
+  @Override
+  public <T> T execute(HttpUriRequest request, ResponseHandler<? extends T> responseHandler, HttpContext context)
+      throws IOException, ClientProtocolException {
+    HttpConnectionResponseHandler<T> handler = new HttpConnectionResponseHandler<T>(responseHandler);
+    return mc.getHttpClient().execute(request, handler, context);
+  }
+
+  @Override
+  public <T> T execute(HttpHost target, HttpRequest request, ResponseHandler<? extends T> responseHandler)
+      throws IOException, ClientProtocolException {
+    HttpConnectionResponseHandler<T> handler = new HttpConnectionResponseHandler<T>(responseHandler);
+    return mc.getHttpClient().execute(target, request, handler);
+  }
+
+  @Override
+  public <T> T execute(HttpHost target, HttpRequest request, ResponseHandler<? extends T> responseHandler,
+                       HttpContext context) throws IOException, ClientProtocolException {
+
+    HttpConnectionResponseHandler<T> handler = new HttpConnectionResponseHandler<T>(responseHandler);
+    return mc.getHttpClient().execute(target, request, handler, context);
+  }
+
+  /**
+   * Wrap the given response handler in our own so we can keep a reference to
+   * the HTTP response so it can be consumed if required.
+   *
+   * @param <T> the type used.
+   */
+  class HttpConnectionResponseHandler<T>  implements ResponseHandler<T> {
+
+    private ResponseHandler<? extends T> responseHandler;
+
+    public HttpConnectionResponseHandler(ResponseHandler<? extends T> responseHandler) {
+      this.responseHandler = responseHandler;
+    }
+
+    @Override
+    public T handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+      httpResponse = response;
+      return responseHandler.handleResponse(response);
+    }
   }
 }

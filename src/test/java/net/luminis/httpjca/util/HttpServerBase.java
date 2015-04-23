@@ -1,9 +1,11 @@
-package net.luminis.httpjca;
+package net.luminis.httpjca.util;
 
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.RequestLine;
 import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 
 import java.util.logging.Logger;
@@ -20,7 +22,41 @@ public abstract class HttpServerBase {
   protected static int port = Integer.valueOf(System.getProperty("undertow.http.port", "8180"));
 
   protected static BasicHttpEntityEnclosingRequest createGetRequestEntity() {
-    return new BasicHttpEntityEnclosingRequest("GET", "http://" + host + ":" + port);
+    return new BasicHttpEntityEnclosingRequest(new RequestLine() {
+      @Override
+      public String getMethod() {
+        return "GET";
+      }
+
+      @Override
+      public ProtocolVersion getProtocolVersion() {
+        return new ProtocolVersion("HTTP",1,1);
+      }
+
+      @Override
+      public String getUri() {
+        return "/";
+      }
+    });
+  }
+
+  protected static BasicHttpEntityEnclosingRequest createBadGetRequestEntity() {
+    return new BasicHttpEntityEnclosingRequest(new RequestLine() {
+      @Override
+      public String getMethod() {
+        return "GET";
+      }
+
+      @Override
+      public ProtocolVersion getProtocolVersion() {
+        return new ProtocolVersion("HTTP",1,1);
+      }
+
+      @Override
+      public String getUri() {
+        return "/tyoyto";
+      }
+    });
   }
 
   protected static void startHttpServer() {

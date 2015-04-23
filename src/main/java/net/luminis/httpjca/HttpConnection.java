@@ -21,12 +21,14 @@
  */
 package net.luminis.httpjca;
 
+import org.apache.http.client.HttpClient;
+
 /**
  * HttpConnection
  *
  * @version $Revision: $
  */
-public interface HttpConnection extends org.apache.http.HttpClientConnection {
+public interface HttpConnection extends HttpClient {
 
    /**
     * Close

@@ -23,20 +23,23 @@ package net.luminis.httpjca;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.http.HttpClientConnection;
+import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
-import org.apache.http.conn.ConnectionPoolTimeoutException;
-import org.apache.http.conn.ConnectionRequest;
+import org.apache.http.HttpRequest;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.routing.HttpRoute;
+import org.apache.http.conn.routing.HttpRoutePlanner;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.impl.conn.DefaultRoutePlanner;
+import org.apache.http.impl.conn.DefaultSchemePortResolver;
+import org.apache.http.protocol.HttpContext;
 
 import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.Set;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import javax.resource.ResourceException;
@@ -80,6 +83,18 @@ public class HttpManagedConnectionFactory implements ManagedConnectionFactory, R
     * Basic Http Connection Pool for the {@link HttpManagedConnection}s.
     */
    private final BasicHttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager();
+
+   // A default route planner if the host and port are not specified.
+   private final HttpRoutePlanner routePlanner = new DefaultRoutePlanner(DefaultSchemePortResolver.INSTANCE) {
+
+      @Override
+      public HttpRoute determineRoute(final HttpHost target, final HttpRequest request, final HttpContext context)
+          throws HttpException {
+         return super.determineRoute(
+             target != null ? target : new HttpHost(host, port),
+             request, context);
+      }
+   };
 
    /**
     * Default constructor
@@ -154,15 +169,9 @@ public class HttpManagedConnectionFactory implements ManagedConnectionFactory, R
    public ManagedConnection createManagedConnection(Subject subject,
                                                     ConnectionRequestInfo cxRequestInfo) throws ResourceException {
       LOG.finest("createManagedConnection()");
-      final HttpRoute httpRoute = new HttpRoute(new HttpHost(host, port));
-      final ConnectionRequest connRequest = connectionManager.requestConnection(httpRoute, null);
-      try {
-         HttpClientConnection conn = connRequest.get(1000, TimeUnit.SECONDS);
-         return new HttpManagedConnection(this, conn);
-      } catch (final ConnectionPoolTimeoutException | ExecutionException | InterruptedException e) {
-         LOG.throwing(getClass().getName(), "createManagedConnection", e);
-         throw new ResourceException(e);
-      }
+      CloseableHttpClient httpClient = HttpClients.custom().setConnectionManager(
+          connectionManager).setRoutePlanner(routePlanner).build();
+      return new HttpManagedConnection(this, httpClient);
    }
 
    /**
