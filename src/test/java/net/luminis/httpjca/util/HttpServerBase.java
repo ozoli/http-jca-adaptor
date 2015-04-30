@@ -18,8 +18,8 @@ public abstract class HttpServerBase {
 
   private static Undertow httpServer;
 
-  protected static String host = System.getProperty("undertow.http.host", "localhost");
-  protected static int port = Integer.valueOf(System.getProperty("undertow.http.port", "8180"));
+  protected static String host = System.getProperty("UNDERTOW_HTTP_HOST", "localhost");
+  protected static int port = Integer.valueOf(System.getProperty("UNDERTOW_HTTP_PORT", "8180"));
 
   protected static BasicHttpEntityEnclosingRequest createGetRequestEntity() {
     return new BasicHttpEntityEnclosingRequest(new RequestLine() {
