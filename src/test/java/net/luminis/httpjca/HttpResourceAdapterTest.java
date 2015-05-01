@@ -4,11 +4,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import javax.resource.ResourceException;
+import javax.resource.spi.ActivationSpec;
+import javax.resource.spi.InvalidPropertyException;
+import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterInternalException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 /**
  * Unit test for the {@link HttpResourceAdapter} class.
@@ -31,6 +32,7 @@ public class HttpResourceAdapterTest {
   @Test
   public void testNotEquals() {
     assertNotEquals("expected not to be equal", null, resourceAdapter);
+    assertNotEquals("expected not to be equal", resourceAdapter, null);
     assertNotEquals("expected not to be equal", 4, resourceAdapter);
     assertNotEquals("expected not to be equal", new HttpResourceAdapter(), resourceAdapter);
   }
@@ -51,5 +53,28 @@ public class HttpResourceAdapterTest {
   @Test
   public void testXAException() throws ResourceException {
     assertNull("expected null", resourceAdapter.getXAResources(null));
+  }
+
+  @Test
+  public void testEndpointActivationDecactivateion() throws ResourceException {
+    ActivationSpecTest specTest = new ActivationSpecTest();
+    resourceAdapter.endpointActivation(null, specTest);
+    resourceAdapter.endpointDeactivation(null, specTest);
+    assertNotNull("expected not null", specTest);
+  }
+
+  class ActivationSpecTest implements ActivationSpec {
+    @Override
+    public void validate() throws InvalidPropertyException {
+    }
+
+    @Override
+    public ResourceAdapter getResourceAdapter() {
+      return null;
+    }
+
+    @Override
+    public void setResourceAdapter(ResourceAdapter ra) throws ResourceException {
+    }
   }
 }
