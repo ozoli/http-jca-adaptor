@@ -118,7 +118,6 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
       ActivationSpec spec) throws ResourceException
    {
       LOG.finest("endpointActivation()");
-
    }
 
    /**
@@ -143,7 +142,6 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
       throws ResourceAdapterInternalException
    {
       LOG.info("start()");
-
    }
 
    /**
