@@ -22,7 +22,6 @@
 package net.luminis.httpjca;
 
 import org.apache.http.*;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.ClientConnectionManager;
@@ -91,56 +90,55 @@ public class HttpConnectionImpl implements HttpConnection
   }
 
   @Override
-  public HttpResponse execute(HttpUriRequest request) throws IOException, ClientProtocolException {
+  public HttpResponse execute(HttpUriRequest request) throws IOException {
     httpResponse = mc.getHttpClient().execute(request);
     return httpResponse;
   }
 
   @Override
   public HttpResponse execute(HttpUriRequest request, HttpContext context)
-      throws IOException, ClientProtocolException {
+      throws IOException {
     httpResponse = mc.getHttpClient().execute(request, context);
     return httpResponse;
   }
 
   @Override
-  public HttpResponse execute(HttpHost target, HttpRequest request) throws IOException, ClientProtocolException {
+  public HttpResponse execute(HttpHost target, HttpRequest request) throws IOException {
     httpResponse = mc.getHttpClient().execute(target, request);
     return httpResponse;
   }
 
   @Override
   public HttpResponse execute(HttpHost target, HttpRequest request, HttpContext context)
-      throws IOException, ClientProtocolException {
+      throws IOException {
     httpResponse = mc.getHttpClient().execute(target, request, context);
     return httpResponse;
   }
 
   @Override
   public <T> T execute(HttpUriRequest request, ResponseHandler<? extends T> responseHandler)
-      throws IOException, ClientProtocolException {
+      throws IOException {
     HttpConnectionResponseHandler<T> handler = new HttpConnectionResponseHandler<T>(responseHandler);
     return mc.getHttpClient().execute(request, handler);
   }
 
   @Override
   public <T> T execute(HttpUriRequest request, ResponseHandler<? extends T> responseHandler, HttpContext context)
-      throws IOException, ClientProtocolException {
+      throws IOException {
     HttpConnectionResponseHandler<T> handler = new HttpConnectionResponseHandler<T>(responseHandler);
     return mc.getHttpClient().execute(request, handler, context);
   }
 
   @Override
   public <T> T execute(HttpHost target, HttpRequest request, ResponseHandler<? extends T> responseHandler)
-      throws IOException, ClientProtocolException {
+      throws IOException {
     HttpConnectionResponseHandler<T> handler = new HttpConnectionResponseHandler<T>(responseHandler);
     return mc.getHttpClient().execute(target, request, handler);
   }
 
   @Override
   public <T> T execute(HttpHost target, HttpRequest request, ResponseHandler<? extends T> responseHandler,
-                       HttpContext context) throws IOException, ClientProtocolException {
-
+                       HttpContext context) throws IOException {
     HttpConnectionResponseHandler<T> handler = new HttpConnectionResponseHandler<T>(responseHandler);
     return mc.getHttpClient().execute(target, request, handler, context);
   }
@@ -152,15 +150,18 @@ public class HttpConnectionImpl implements HttpConnection
    * @param <T> the type used.
    */
   class HttpConnectionResponseHandler<T>  implements ResponseHandler<T> {
-
     private ResponseHandler<? extends T> responseHandler;
 
+    /**
+     * Create with the given {@link ResponseHandler<T>}.
+     * @param responseHandler the {@link ResponseHandler<T>} to wrap.
+     */
     public HttpConnectionResponseHandler(ResponseHandler<? extends T> responseHandler) {
       this.responseHandler = responseHandler;
     }
 
     @Override
-    public T handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+    public T handleResponse(HttpResponse response) throws IOException {
       httpResponse = response;
       return responseHandler.handleResponse(response);
     }
