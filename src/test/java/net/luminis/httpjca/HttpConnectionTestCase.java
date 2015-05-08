@@ -106,7 +106,7 @@ public class HttpConnectionTestCase extends HttpServerBase
   @Test
   @SuppressWarnings("deprecated")
   public void testDeprecatedMethods() throws ResourceException {
-    HttpConnection connection = connectionFactory.getConnection();
+    HttpConnectionImpl connection = (HttpConnectionImpl) connectionFactory.getConnection();
     assertNotNull("getParams should not be null", connection.getParams());
     assertNotNull("getClientConnectionManager should not be null",
         connection.getConnectionManager());
@@ -114,7 +114,7 @@ public class HttpConnectionTestCase extends HttpServerBase
 
   @Test
   public void testExecuteHostRequest() throws Exception {
-    HttpConnection connection = connectionFactory.getConnection();
+    HttpConnectionImpl connection = (HttpConnectionImpl) connectionFactory.getConnection();
     assertNotNull("http connection should not be null", connection);
 
     HttpHost target = new HttpHost(host, port);
@@ -128,7 +128,7 @@ public class HttpConnectionTestCase extends HttpServerBase
 
   @Test
   public void testExecuteHostRequestNoConsume() throws Exception {
-    HttpConnection connection = connectionFactory.getConnection();
+    HttpConnectionImpl connection = (HttpConnectionImpl) connectionFactory.getConnection();
     assertNotNull("http connection should not be null", connection);
 
     connection.execute(new HttpHost(host, port), createGetRequestEntity());
@@ -137,7 +137,7 @@ public class HttpConnectionTestCase extends HttpServerBase
 
   @Test
   public void testExecuteHostRequestContext() throws Exception {
-    HttpConnection connection = connectionFactory.getConnection();
+    HttpConnectionImpl connection = (HttpConnectionImpl) connectionFactory.getConnection();
     assertNotNull("http connection should not be null", connection);
 
     HttpHost target = new HttpHost(host, port);
@@ -151,7 +151,7 @@ public class HttpConnectionTestCase extends HttpServerBase
 
   @Test
   public void testExecuteUriRequest() throws Exception {
-    HttpConnection connection = connectionFactory.getConnection();
+    HttpConnectionImpl connection = (HttpConnectionImpl) connectionFactory.getConnection();
     assertNotNull("http connection should not be null", connection);
 
     HttpResponse response = connection.execute(new HttpGet("http://" + host + ":" + port));
@@ -164,7 +164,7 @@ public class HttpConnectionTestCase extends HttpServerBase
 
   @Test
   public void testExecuteUriRequestContext() throws Exception {
-    HttpConnection connection = connectionFactory.getConnection();
+    HttpConnectionImpl connection = (HttpConnectionImpl) connectionFactory.getConnection();
     assertNotNull("http connection should not be null", connection);
 
     HttpResponse response = connection.execute(new HttpGet("http://" + host + ":" + port), new HttpClientContext());
@@ -177,7 +177,7 @@ public class HttpConnectionTestCase extends HttpServerBase
 
   @Test
   public void testBadExecute() throws Exception {
-    HttpConnection connection = connectionFactory.getConnection();
+    HttpConnectionImpl connection = (HttpConnectionImpl) connectionFactory.getConnection();
     assertNotNull("http connection should not be null", connection);
 
     HttpHost target = new HttpHost(host, port);
@@ -189,7 +189,7 @@ public class HttpConnectionTestCase extends HttpServerBase
   
   @Test
   public void testShutdown() throws Exception {
-    HttpConnection connection = connectionFactory.getConnection();
+    HttpConnectionImpl connection = (HttpConnectionImpl) connectionFactory.getConnection();
     HttpHost target = new HttpHost(host, port);
     HttpResponse response = connection.execute(target, createBadGetRequestEntity());
 
@@ -199,7 +199,7 @@ public class HttpConnectionTestCase extends HttpServerBase
 
   @Test
   public void testExecuteResponseHandler() throws Exception {
-    HttpConnection connection = connectionFactory.getConnection();
+    HttpConnectionImpl connection = (HttpConnectionImpl) connectionFactory.getConnection();
     assertNotNull("http connection should not be null", connection);
 
     Integer responseCode = connection.execute(new HttpGet("http://" + host + ":" + port), responseHandler);
