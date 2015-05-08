@@ -32,9 +32,7 @@ import javax.resource.spi.ManagedConnectionMetaData;
  *
  * @version $Revision: $
  */
-public class HttpManagedConnectionMetaData implements ManagedConnectionMetaData
-{
-   /** The logger */
+public class HttpManagedConnectionMetaData implements ManagedConnectionMetaData {
    private static final Logger LOG = Logger.getLogger(HttpManagedConnectionMetaData.class.getName());
 
    private static final String APACHE_HTTP_CLIENT = "Apache Http Client";
@@ -43,9 +41,7 @@ public class HttpManagedConnectionMetaData implements ManagedConnectionMetaData
    /**
     * Default constructor
     */
-   public HttpManagedConnectionMetaData()
-   {
-
+   public HttpManagedConnectionMetaData() {
    }
 
    /**
@@ -55,8 +51,7 @@ public class HttpManagedConnectionMetaData implements ManagedConnectionMetaData
     * @throws ResourceException Thrown if an error occurs
     */
    @Override
-   public String getEISProductName() throws ResourceException
-   {
+   public String getEISProductName() throws ResourceException {
       LOG.finest("getEISProductName()");
       return APACHE_HTTP_CLIENT;
    }
@@ -68,8 +63,7 @@ public class HttpManagedConnectionMetaData implements ManagedConnectionMetaData
     * @throws ResourceException Thrown if an error occurs
     */
    @Override
-   public String getEISProductVersion() throws ResourceException
-   {
+   public String getEISProductVersion() throws ResourceException {
       LOG.finest("getEISProductVersion()");
       return APACHE_HTTP_CLIENT_VERSION;
    }
@@ -81,8 +75,7 @@ public class HttpManagedConnectionMetaData implements ManagedConnectionMetaData
     * @throws ResourceException Thrown if an error occurs
     */
    @Override
-   public int getMaxConnections() throws ResourceException
-   {
+   public int getMaxConnections() throws ResourceException {
       LOG.finest("getMaxConnections()");
       return 0; //TODO
    }
@@ -94,10 +87,8 @@ public class HttpManagedConnectionMetaData implements ManagedConnectionMetaData
     * @throws ResourceException Thrown if an error occurs
     */
    @Override
-   public String getUserName() throws ResourceException
-   {
+   public String getUserName() throws ResourceException {
       LOG.finest("getUserName() returning null");
       return null;
    }
-
 }

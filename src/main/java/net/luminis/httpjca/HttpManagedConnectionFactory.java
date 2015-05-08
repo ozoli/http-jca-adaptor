@@ -64,7 +64,6 @@ import javax.security.auth.Subject;
    connection = HttpConnection.class,
    connectionImpl = HttpConnectionImpl.class)
 public class HttpManagedConnectionFactory implements ManagedConnectionFactory, ResourceAdapterAssociation {
-
    private static final long serialVersionUID = 1L;
 
    private static final Logger LOG = Logger.getLogger(HttpManagedConnectionFactory.class.getName());

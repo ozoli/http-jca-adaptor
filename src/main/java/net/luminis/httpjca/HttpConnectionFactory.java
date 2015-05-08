@@ -31,8 +31,7 @@ import javax.resource.ResourceException;
  *
  * @version $Revision: $
  */
-public interface HttpConnectionFactory extends Serializable, Referenceable
-{
+public interface HttpConnectionFactory extends Serializable, Referenceable {
    /** 
     * Get connection from factory
     *
@@ -40,5 +39,4 @@ public interface HttpConnectionFactory extends Serializable, Referenceable
     * @exception ResourceException Thrown if a connection can't be obtained
     */
    HttpConnection getConnection() throws ResourceException;
-
 }

@@ -51,8 +51,7 @@ import javax.transaction.xa.XAResource;
  *
  * @version $Revision: $
  */
-public class HttpManagedConnection implements ManagedConnection
-{
+public class HttpManagedConnection implements ManagedConnection {
    private static final Logger LOG = Logger.getLogger(HttpManagedConnection.class.getName());
 
    private PrintWriter logwriter;
@@ -77,8 +76,7 @@ public class HttpManagedConnection implements ManagedConnection
     * @param httpClient HTTP Client underlying
     */
    public HttpManagedConnection(HttpManagedConnectionFactory mcf, CloseableHttpClient httpClient)
-       throws ResourceException
-   {
+       throws ResourceException {
       this.mcf = mcf;
       this.logwriter = null;
       this.listeners = Collections.synchronizedList(new ArrayList<ConnectionEventListener>(1));
@@ -104,8 +102,7 @@ public class HttpManagedConnection implements ManagedConnection
     */
    @Override
    public Object getConnection(Subject subject,
-      ConnectionRequestInfo cxRequestInfo) throws ResourceException
-   {
+      ConnectionRequestInfo cxRequestInfo) throws ResourceException {
       LOG.finest("getConnection()");
       connection = new HttpConnectionImpl(this, mcf);
       return connection;
@@ -119,8 +116,7 @@ public class HttpManagedConnection implements ManagedConnection
     * @throws ResourceException generic exception if operation fails
     */
    @Override
-   public void associateConnection(final Object connection) throws ResourceException
-   {
+   public void associateConnection(final Object connection) throws ResourceException {
       LOG.finest("associateConnection()");
 
       if (connection == null) {
@@ -138,8 +134,7 @@ public class HttpManagedConnection implements ManagedConnection
     *
     * @throws ResourceException generic exception if operation fails
     */
-   public void cleanup() throws ResourceException
-   {
+   public void cleanup() throws ResourceException {
       LOG.finest("cleanup()");
       if (connection != null) {
           consumeHttpResponseEntity();
@@ -151,8 +146,7 @@ public class HttpManagedConnection implements ManagedConnection
     *
     * @throws ResourceException generic exception if operation fails
     */
-   public void destroy() throws ResourceException
-   {
+   public void destroy() throws ResourceException {
       LOG.finest("destroy()");
       consumeHttpResponseEntity();
       try {
@@ -174,8 +168,7 @@ public class HttpManagedConnection implements ManagedConnection
     *
     * @param listener A new ConnectionEventListener to be registered
     */
-   public void addConnectionEventListener(ConnectionEventListener listener)
-   {
+   public void addConnectionEventListener(ConnectionEventListener listener) {
       LOG.finest("addConnectionEventListener()");
       if (listener == null) {
          throw new IllegalArgumentException("Listener is null");
@@ -188,8 +181,7 @@ public class HttpManagedConnection implements ManagedConnection
     *
     * @param listener already registered connection event listener to be removed
     */
-   public void removeConnectionEventListener(ConnectionEventListener listener)
-   {
+   public void removeConnectionEventListener(ConnectionEventListener listener) {
       LOG.finest("removeConnectionEventListener()");
       if (listener == null) {
          LOG.severe("ConnectionEventListener is NULL");
@@ -203,8 +195,7 @@ public class HttpManagedConnection implements ManagedConnection
     *
     * @param connection The connection
     */
-   void closeHandle(HttpConnection connection)
-   {
+   void closeHandle(HttpConnection connection) {
       ConnectionEvent event = new ConnectionEvent(this, ConnectionEvent.CONNECTION_CLOSED);
       event.setConnectionHandle(connection);
       for (final ConnectionEventListener cel : listeners)
@@ -219,8 +210,7 @@ public class HttpManagedConnection implements ManagedConnection
     * @return Character output stream associated with this Managed-Connection instance
     * @throws ResourceException generic exception if operation fails
     */
-   public PrintWriter getLogWriter() throws ResourceException
-   {
+   public PrintWriter getLogWriter() throws ResourceException {
       LOG.finest("getLogWriter()");
       return logwriter;
    }
@@ -231,8 +221,7 @@ public class HttpManagedConnection implements ManagedConnection
     * @param out Character Output stream to be associated
     * @throws ResourceException  generic exception if operation fails
     */
-   public void setLogWriter(PrintWriter out) throws ResourceException
-   {
+   public void setLogWriter(PrintWriter out) throws ResourceException {
       LOG.finest("setLogWriter()");
       logwriter = out;
    }
@@ -243,8 +232,7 @@ public class HttpManagedConnection implements ManagedConnection
     * @return LocalTransaction instance
     * @throws ResourceException generic exception if operation fails
     */
-   public LocalTransaction getLocalTransaction() throws ResourceException
-   {
+   public LocalTransaction getLocalTransaction() throws ResourceException {
       throw new NotSupportedException("getLocalTransaction() not supported");
    }
 
@@ -254,8 +242,7 @@ public class HttpManagedConnection implements ManagedConnection
     * @return XAResource instance
     * @throws ResourceException generic exception if operation fails
     */
-   public XAResource getXAResource() throws ResourceException
-   {
+   public XAResource getXAResource() throws ResourceException {
       throw new NotSupportedException("getXAResource() not supported");
    }
 
@@ -265,10 +252,8 @@ public class HttpManagedConnection implements ManagedConnection
     * @return ManagedConnectionMetaData instance
     * @throws ResourceException generic exception if operation fails
     */
-   public ManagedConnectionMetaData getMetaData() throws ResourceException
-   {
+   public ManagedConnectionMetaData getMetaData() throws ResourceException {
       LOG.finest("getMetaData()");
       return new HttpManagedConnectionMetaData();
    }
-
 }

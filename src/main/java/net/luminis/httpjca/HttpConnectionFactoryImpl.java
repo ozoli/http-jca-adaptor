@@ -30,12 +30,11 @@ import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionManager;
 
 /**
- * HttpConnectionFactoryImpl
+ * Implementation of the {@link }HttpConnectionFactory}.
  *
  * @version $Revision: $
  */
-public class HttpConnectionFactoryImpl implements HttpConnectionFactory
-{
+public class HttpConnectionFactoryImpl implements HttpConnectionFactory {
    private static final long serialVersionUID = 1L;
 
    private static final Logger LOG = Logger.getLogger(HttpConnectionFactoryImpl.class.getName());
@@ -49,9 +48,7 @@ public class HttpConnectionFactoryImpl implements HttpConnectionFactory
    /**
     * Default constructor
     */
-   public HttpConnectionFactoryImpl()
-   {
-
+   public HttpConnectionFactoryImpl() {
    }
 
    /**
@@ -59,8 +56,7 @@ public class HttpConnectionFactoryImpl implements HttpConnectionFactory
     * @param mcf ManagedConnectionFactory
     * @param cxManager ConnectionManager
     */
-   public HttpConnectionFactoryImpl(HttpManagedConnectionFactory mcf, ConnectionManager cxManager)
-   {
+   public HttpConnectionFactoryImpl(HttpManagedConnectionFactory mcf, ConnectionManager cxManager) {
       this.mcf = mcf;
       this.connectionManager = cxManager;
    }
@@ -72,8 +68,7 @@ public class HttpConnectionFactoryImpl implements HttpConnectionFactory
     * @exception ResourceException Thrown if a connection can't be obtained
     */
    @Override
-   public HttpConnection getConnection() throws ResourceException
-   {
+   public HttpConnection getConnection() throws ResourceException {
       LOG.finest("getConnection()");
       return (HttpConnection)connectionManager.allocateConnection(mcf, null);
    }
@@ -85,8 +80,7 @@ public class HttpConnectionFactoryImpl implements HttpConnectionFactory
     * @exception NamingException Thrown if a reference can't be obtained
     */
    @Override
-   public Reference getReference() throws NamingException
-   {
+   public Reference getReference() throws NamingException {
       LOG.finest("getReference()");
       return reference;
    }
@@ -97,10 +91,8 @@ public class HttpConnectionFactoryImpl implements HttpConnectionFactory
     * @param reference A Reference instance
     */
    @Override
-   public void setReference(Reference reference)
-   {
+   public void setReference(Reference reference) {
       LOG.finest("setReference()");
       this.reference = reference;
    }
-
 }

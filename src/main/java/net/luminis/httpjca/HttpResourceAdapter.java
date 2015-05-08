@@ -39,7 +39,7 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.xa.XAResource;
 
 /**
- * HttpResourceAdapter
+ * HttpResourceAdapter impldmenation of the {@link ResourceAdapter} interface.
  *
  * @version $Revision: $
  */
@@ -51,8 +51,7 @@ import javax.transaction.xa.XAResource;
     version = "0.0.1",
     reauthenticationSupport = false,
     transactionSupport = TransactionSupport.TransactionSupportLevel.NoTransaction)
-public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializable
-{
+public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializable {
    private static final long serialVersionUID = 1L;
 
    private static final Logger LOG = Logger.getLogger(HttpResourceAdapter.class.getName());
@@ -66,17 +65,14 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
    /**
     * Default constructor, needed for JCA specification compliance.
     */
-   public HttpResourceAdapter()
-   {
-
+   public HttpResourceAdapter() {
    }
 
    /** 
     * Set hostUrl
     * @param hostUrl The host URL to use
     */
-   public void setHostUrl(String hostUrl)
-   {
+   public void setHostUrl(String hostUrl) {
       this.hostUrl = hostUrl;
    }
 
@@ -84,8 +80,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
     * Get hostUrl
     * @return The host URL
     */
-   public String getHostUrl()
-   {
+   public String getHostUrl() {
       return hostUrl;
    }
 
@@ -93,8 +88,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
     * Set hostPort
     * @param hostPort The HTTP port
     */
-   public void setHostPort(Integer hostPort)
-   {
+   public void setHostPort(Integer hostPort) {
       this.hostPort = hostPort;
    }
 
@@ -102,8 +96,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
     * Get hostPort
     * @return The HTTP port
     */
-   public Integer getHostPort()
-   {
+   public Integer getHostPort() {
       return hostPort;
    }
 
@@ -115,8 +108,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
     * @throws ResourceException generic exception 
     */
    public void endpointActivation(MessageEndpointFactory endpointFactory,
-      ActivationSpec spec) throws ResourceException
-   {
+      ActivationSpec spec) throws ResourceException {
       LOG.finest("endpointActivation()");
    }
 
@@ -127,8 +119,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
     * @param spec An activation spec JavaBean instance.
     */
    public void endpointDeactivation(MessageEndpointFactory endpointFactory,
-      ActivationSpec spec)
-   {
+      ActivationSpec spec) {
       LOG.finest("endpointDeactivation()");
    }
 
@@ -139,8 +130,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
     * @throws ResourceAdapterInternalException indicates bootstrap failure.
     */
    public void start(BootstrapContext ctx)
-      throws ResourceAdapterInternalException
-   {
+      throws ResourceAdapterInternalException {
       LOG.info("start()");
    }
 
@@ -148,8 +138,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
     * This is called when a resource adapter instance is undeployed or
     * during application server shutdown. 
     */
-   public void stop()
-   {
+   public void stop() {
       LOG.info("stop()");
    }
 
@@ -161,8 +150,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
     * @return An array of XAResource objects
     */
    public XAResource[] getXAResources(ActivationSpec[] specs)
-      throws ResourceException
-   {
+      throws ResourceException {
       LOG.warning("getXAResources() returning NULL");
       return null;
    }
@@ -172,8 +160,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
     * @return A hash code value for this object.
     */
    @Override
-   public int hashCode()
-   {
+   public int hashCode() {
      return new HashCodeBuilder().append(hostUrl).append(hostPort).hashCode();
    }
 
@@ -183,8 +170,7 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
     * @return true if this object is the same as the obj argument, false otherwise.
     */
    @Override
-   public boolean equals(final Object other)
-   {
+   public boolean equals(final Object other) {
      if (other == null) {
        return false;
      } else if (other == this) {
@@ -197,5 +183,4 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
                                  .append(getHostPort(), otherHttpRA.getHostPort()).isEquals();
      }
    }
-
 }
