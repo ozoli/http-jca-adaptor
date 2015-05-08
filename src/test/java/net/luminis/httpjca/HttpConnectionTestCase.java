@@ -47,8 +47,7 @@ import java.io.IOException;
 import static org.junit.Assert.*;
 
 /**
- * Test case for the {@link HttpConnection} class' execute methods except those using
- * a {@link ResponseHandler}.
+ * Test case for the {@link HttpConnection} class' execute methods.
  */
 @RunWith(Arquillian.class)
 public class HttpConnectionTestCase extends HttpServerBase
