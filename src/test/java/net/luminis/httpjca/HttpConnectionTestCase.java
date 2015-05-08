@@ -42,6 +42,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.IOException;
+
 import static org.junit.Assert.*;
 
 /**
@@ -62,6 +64,13 @@ public class HttpConnectionTestCase extends HttpServerBase
 
   @Resource
   private HttpManagedConnectionFactory managedConnectionFactory;
+
+  private ResponseHandler<Integer> responseHandler = new ResponseHandler<Integer>() {
+    @Override
+    public Integer handleResponse(final HttpResponse response) throws IOException {
+      return response.getStatusLine().getStatusCode();
+    }
+  };
 
   /**
     * Define the deployment
@@ -93,6 +102,15 @@ public class HttpConnectionTestCase extends HttpServerBase
     assertTrue("http connection should instance of HttpConnectionImpl",
         connection instanceof HttpConnectionImpl);
     connection.close();
+  }
+
+  @Test
+  @SuppressWarnings("deprecated")
+  public void testDeprecatedMethods() throws ResourceException {
+    HttpConnection connection = connectionFactory.getConnection();
+    assertNotNull("getParams should not be null", connection.getParams());
+    assertNotNull("getClientConnectionManager should not be null",
+        connection.getConnectionManager());
   }
 
   @Test
@@ -179,6 +197,16 @@ public class HttpConnectionTestCase extends HttpServerBase
 
     assertEquals("expected 200 OK", 200, response.getStatusLine().getStatusCode());
 
+    connection.close();
+  }
+
+  @Test
+  public void testExecuteResponseHandler() throws Exception {
+    HttpConnection connection = connectionFactory.getConnection();
+    assertNotNull("http connection should not be null", connection);
+
+    Integer responseCode = connection.execute(new HttpGet("http://" + host + ":" + port), responseHandler);
+    assertEquals("expected 200", Integer.valueOf(200), responseCode);
     connection.close();
   }
 
