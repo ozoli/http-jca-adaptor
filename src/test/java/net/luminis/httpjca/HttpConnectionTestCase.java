@@ -185,7 +185,6 @@ public class HttpConnectionTestCase extends HttpServerBase
     HttpResponse response = connection.execute(target, createBadGetRequestEntity());
 
     assertEquals("expected 404", 404, response.getStatusLine().getStatusCode());
-
     connection.close();
   }
   
@@ -196,7 +195,6 @@ public class HttpConnectionTestCase extends HttpServerBase
     HttpResponse response = connection.execute(target, createBadGetRequestEntity());
 
     assertEquals("expected 200 OK", 200, response.getStatusLine().getStatusCode());
-
     connection.close();
   }
 
@@ -206,6 +204,16 @@ public class HttpConnectionTestCase extends HttpServerBase
     assertNotNull("http connection should not be null", connection);
 
     Integer responseCode = connection.execute(new HttpGet("http://" + host + ":" + port), responseHandler);
+    assertEquals("expected 200", Integer.valueOf(200), responseCode);
+
+    responseCode = connection.execute(
+        new HttpGet("http://" + host + ":" + port), responseHandler, new HttpClientContext());
+    assertEquals("expected 200", Integer.valueOf(200), responseCode);
+
+    responseCode = connection.execute(new HttpHost(host, port), new HttpGet("/"), responseHandler);
+    assertEquals("expected 200", Integer.valueOf(200), responseCode);
+    responseCode = connection.execute(
+        new HttpHost(host, port), new HttpGet("/"), responseHandler, new HttpClientContext());
     assertEquals("expected 200", Integer.valueOf(200), responseCode);
     connection.close();
   }
