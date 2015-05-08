@@ -7,6 +7,7 @@ The [Arquillian](http://arquillian.org/) test framework from [JBoss](http://www.
 [JDK 8](http://www.oracle.com/technetwork/java/javase/overview/index.html) and [Apache Maven 3.2.2](https://maven.apache.org/) has been used in development. 
 To run the tests against a remote WildFly or JBoss instance on [OpenShift](http://openshift.redhat.com) create a file called `wildfly-dev.properties` in `~/config/` (eg. `/users/bloke/config`) with content similar to:
 
+```bash
 wildfly.namespace=aussieollie
 wildfly.application=wildfly8
 wildfly.libraDomain=rhcloud.com
@@ -18,7 +19,8 @@ wildfly.disableStrictHostChecking=true
 
 undertow.http.host=localhost
 undertow.http.port=8180
- 
+```
+
 The `wildfly.identityFile` is the SSH private key of the [WildFly](http://wildfly.org/) instance on [OpenShift](http://openshift.redhat.com).
 
 ##Examples
