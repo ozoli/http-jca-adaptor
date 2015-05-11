@@ -88,7 +88,9 @@ public class HttpManagedConnectionFactory implements ManagedConnectionFactory, R
       @Override
       public HttpRoute determineRoute(final HttpHost target, final HttpRequest request, final HttpContext context)
           throws HttpException {
-         return super.determineRoute(target, request, context);
+         return super.determineRoute(
+             target != null ? target : new HttpHost(host, port),
+             request, context);
       }
    };
 
