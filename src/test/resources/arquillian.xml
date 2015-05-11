@@ -22,4 +22,10 @@
             <property name="disableStrictHostChecking">${wildfly.disableStrictHostChecking}</property>
         </configuration>
     </container>
+
+    <extension qualifier="jacoco">
+        <property name="excludes">org.apache.*</property>
+        <property name="includes">net.luminis.httpjca.*</property>
+    </extension>
+
 </arquillian>
