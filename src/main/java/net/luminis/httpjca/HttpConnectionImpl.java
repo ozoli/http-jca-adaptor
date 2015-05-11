@@ -27,7 +27,6 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -47,11 +46,6 @@ public class HttpConnectionImpl implements HttpConnection
    /** ManagedConnectionFactory */
    private HttpManagedConnectionFactory mcf;
 
-  /**
-   * local reference top the {@link HttpResponse} to make sure it is consumed correctly. 
-   */
-  private HttpResponse httpResponse;
-
    /**
     * Default constructor
     * @param mc HttpManagedConnection
@@ -66,53 +60,43 @@ public class HttpConnectionImpl implements HttpConnection
     */
    public void close() {
      LOG.fine("Closing HttpConnection");
-     if (httpResponse != null) {
-       EntityUtils.consumeQuietly(httpResponse.getEntity());
-     }
      mc.closeHandle(this);
    }
 
-  /**
-   * @return the {@link HttpResponse} so it can be consumed if necessary.
-   */
-  HttpResponse getHttpResponse() {
-    return httpResponse;
-  }
-
   @Override
   public HttpParams getParams() {
-    return mc.getHttpClient().getParams();
+      throw new RuntimeException("getParams() not supported");
   }
 
   @Override
   public ClientConnectionManager getConnectionManager() {
-    return mc.getHttpClient().getConnectionManager();
+    throw new RuntimeException("getConnectionManager() not supported");
   }
 
   @Override
   public HttpResponse execute(HttpUriRequest request) throws IOException {
-    httpResponse = mc.getHttpClient().execute(request);
-    return httpResponse;
+    mc.setHttpResponse(mc.getHttpClient().execute(request));
+    return mc.getHttpResponse();
   }
 
   @Override
   public HttpResponse execute(HttpUriRequest request, HttpContext context)
       throws IOException {
-    httpResponse = mc.getHttpClient().execute(request, context);
-    return httpResponse;
+    mc.setHttpResponse(mc.getHttpClient().execute(request, context));
+    return mc.getHttpResponse();
   }
 
   @Override
   public HttpResponse execute(HttpHost target, HttpRequest request) throws IOException {
-    httpResponse = mc.getHttpClient().execute(target, request);
-    return httpResponse;
+    mc.setHttpResponse(mc.getHttpClient().execute(target, request));
+    return mc.getHttpResponse();
   }
 
   @Override
   public HttpResponse execute(HttpHost target, HttpRequest request, HttpContext context)
       throws IOException {
-    httpResponse = mc.getHttpClient().execute(target, request, context);
-    return httpResponse;
+    mc.setHttpResponse(mc.getHttpClient().execute(target, request, context));
+    return mc.getHttpResponse();
   }
 
   @Override
@@ -162,7 +146,7 @@ public class HttpConnectionImpl implements HttpConnection
 
     @Override
     public T handleResponse(HttpResponse response) throws IOException {
-      httpResponse = response;
+      mc.setHttpResponse(response);
       return responseHandler.handleResponse(response);
     }
   }

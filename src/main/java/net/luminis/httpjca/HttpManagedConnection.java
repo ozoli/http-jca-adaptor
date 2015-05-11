@@ -23,11 +23,11 @@ package net.luminis.httpjca;
 
 
 import org.apache.http.HttpClientConnection;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -71,6 +71,11 @@ public class HttpManagedConnection implements ManagedConnection {
    private CloseableHttpClient httpClient;
 
    /**
+    * local reference top the {@link HttpResponse} to make sure it is consumed correctly.
+    */
+   private HttpResponse httpResponse;
+
+   /**
     * Default constructor
     * @param mcf mcf
     * @param httpClient HTTP Client underlying
@@ -88,6 +93,7 @@ public class HttpManagedConnection implements ManagedConnection {
     * @return the underlying {@link org.apache.http.HttpClientConnection}
     */
    HttpClient getHttpClient() {
+      consumeHttpResponse();
       return httpClient;
    }
    
@@ -136,9 +142,7 @@ public class HttpManagedConnection implements ManagedConnection {
     */
    public void cleanup() throws ResourceException {
       LOG.finest("cleanup()");
-      if (connection != null) {
-          consumeHttpResponseEntity();
-      }
+      consumeHttpResponse();
    }
 
    /**
@@ -148,19 +152,7 @@ public class HttpManagedConnection implements ManagedConnection {
     */
    public void destroy() throws ResourceException {
       LOG.finest("destroy()");
-      consumeHttpResponseEntity();
-      try {
-         httpClient.close();
-      } catch (IOException e) {
-         LOG.throwing(HttpManagedConnection.class.getName(), "destroy()", e);
-         throw new ResourceException(e);
-      }
-   }
-
-   private void consumeHttpResponseEntity() {
-      if (connection.getHttpResponse() != null) {
-         EntityUtils.consumeQuietly(connection.getHttpResponse().getEntity());
-      }
+      consumeHttpResponse();
    }
 
    /**
@@ -196,10 +188,10 @@ public class HttpManagedConnection implements ManagedConnection {
     * @param connection The connection
     */
    void closeHandle(HttpConnection connection) {
+      consumeHttpResponse();
       ConnectionEvent event = new ConnectionEvent(this, ConnectionEvent.CONNECTION_CLOSED);
       event.setConnectionHandle(connection);
-      for (final ConnectionEventListener cel : listeners)
-      {
+      for (final ConnectionEventListener cel : listeners) {
          cel.connectionClosed(event);
       }
    }
@@ -255,5 +247,25 @@ public class HttpManagedConnection implements ManagedConnection {
    public ManagedConnectionMetaData getMetaData() throws ResourceException {
       LOG.finest("getMetaData()");
       return new HttpManagedConnectionMetaData();
+   }
+
+   /**
+    * @return the {@link HttpResponse} so it can be consumed if needed
+    */
+   public HttpResponse getHttpResponse() {
+      return httpResponse;
+   }
+
+   /**
+    * @param httpResponse the {@link HttpResponse} so it can be consumed if needed
+    */
+   public void setHttpResponse(HttpResponse httpResponse) {
+      this.httpResponse = httpResponse;
+   }
+
+   private void consumeHttpResponse() {
+      if (httpResponse != null) {
+         EntityUtils.consumeQuietly(httpResponse.getEntity());
+      }
    }
 }
