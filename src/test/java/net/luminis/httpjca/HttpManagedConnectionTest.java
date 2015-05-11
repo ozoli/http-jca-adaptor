@@ -1,22 +1,31 @@
 package net.luminis.httpjca;
 
 import net.luminis.httpjca.util.HttpServerBase;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.*;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import javax.resource.NotSupportedException;
 import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionEvent;
-import javax.resource.spi.ConnectionEventListener;
-import javax.resource.spi.ManagedConnectionMetaData;
+import javax.resource.spi.*;
+import javax.security.auth.Subject;
+import javax.transaction.xa.XAResource;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeSet;
 
 import static org.junit.Assert.*;
 
@@ -30,6 +39,7 @@ public class HttpManagedConnectionTest extends HttpServerBase {
   private HttpConnection connection;
   private CloseableHttpClient client = HttpClients.custom().setConnectionManager(
       new BasicHttpClientConnectionManager()).build();
+  private final File logWritierFile = new File("aFile");
 
   @BeforeClass
   public static void start() {
@@ -101,7 +111,18 @@ public class HttpManagedConnectionTest extends HttpServerBase {
   public void testRemoveNulConnectionListener() throws IllegalArgumentException {
     managedConnection.removeConnectionEventListener(null);
   }
-  
+
+  @Test(expected = NotSupportedException.class)
+  public void testLocalTransaction() throws ResourceException {
+    managedConnection.getLocalTransaction();
+  }
+
+  @Test
+  public void testLogWriter() throws FileNotFoundException, ResourceException {
+    managedConnection.setLogWriter(new PrintWriter(logWritierFile));
+    assertNotNull("expected a log writer", managedConnection.getLogWriter());
+  }
+
   @Test
   public void testConnectionEventListener() throws IOException, ResourceException {
     ConnectionEventListener listener = new TestConnectionEventListener();
@@ -112,7 +133,36 @@ public class HttpManagedConnectionTest extends HttpServerBase {
 
     managedConnection.removeConnectionEventListener(listener);
   }
-  
+
+  @Test
+  public void testMatchConnections() throws ResourceException {
+    Set<ManagedConnection> matchConnections = new HashSet<>();
+    matchConnections.add(managedConnection);
+    HttpManagedConnectionFactory factory = new HttpManagedConnectionFactory();
+    assertNull("expect null", factory.matchManagedConnections(new HashSet<>(), null, null));
+
+    ManagedConnection connection = factory.matchManagedConnections(matchConnections, null, null);
+    assertNotNull("expect not null", connection);
+    assertTrue("wrong instance", connection instanceof HttpManagedConnection);
+    HttpManagedConnection httpManagedConnection = (HttpManagedConnection) connection;
+    assertEquals("wrong instance", managedConnection, httpManagedConnection);
+
+    matchConnections.add(new TesManagedConnection());
+    connection = factory.matchManagedConnections(matchConnections, null, null);
+    assertNotNull("expect not null", connection);
+    assertTrue("wrong instance", connection instanceof HttpManagedConnection);
+    httpManagedConnection = (HttpManagedConnection) connection;
+    assertEquals("wrong instance", managedConnection, httpManagedConnection);
+
+  }
+
+  @After
+  public void testDestroy() throws ResourceException {
+    managedConnection.destroy();
+
+    FileUtils.deleteQuietly(logWritierFile);
+  }
+
   class TestConnectionEventListener implements ConnectionEventListener {
 
     @Override
@@ -140,7 +190,64 @@ public class HttpManagedConnectionTest extends HttpServerBase {
 
     }
   }
-  
+
+  class TesManagedConnection implements ManagedConnection {
+
+    @Override
+    public Object getConnection(Subject subject, ConnectionRequestInfo cxRequestInfo) throws ResourceException {
+      return null;
+    }
+
+    @Override
+    public void destroy() throws ResourceException {
+
+    }
+
+    @Override
+    public void cleanup() throws ResourceException {
+
+    }
+
+    @Override
+    public void associateConnection(Object connection) throws ResourceException {
+
+    }
+
+    @Override
+    public void addConnectionEventListener(ConnectionEventListener listener) {
+
+    }
+
+    @Override
+    public void removeConnectionEventListener(ConnectionEventListener listener) {
+
+    }
+
+    @Override
+    public XAResource getXAResource() throws ResourceException {
+      return null;
+    }
+
+    @Override
+    public LocalTransaction getLocalTransaction() throws ResourceException {
+      return null;
+    }
+
+    @Override
+    public ManagedConnectionMetaData getMetaData() throws ResourceException {
+      return null;
+    }
+
+    @Override
+    public void setLogWriter(PrintWriter out) throws ResourceException {
+
+    }
+
+    @Override
+    public PrintWriter getLogWriter() throws ResourceException {
+      return null;
+    }
+  }
   @AfterClass
   public static void stop() {
     stopHttpServer();
