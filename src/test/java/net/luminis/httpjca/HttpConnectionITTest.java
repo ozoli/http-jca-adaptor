@@ -50,8 +50,8 @@ import static org.junit.Assert.*;
  * Test case for the {@link HttpConnection} class' execute methods.
  */
 @RunWith(Arquillian.class)
-public class HttpConnectionTestCase extends HttpServerBase
-{
+public class HttpConnectionITTest extends HttpServerBase {
+
   @BeforeClass
   public static void setup() {
     buildHttpServer();
@@ -60,9 +60,6 @@ public class HttpConnectionTestCase extends HttpServerBase
   
   @Resource(mappedName = "java:/eis/HttpConnectionFactory")
   private HttpConnectionFactory connectionFactory;
-
-  @Resource
-  private HttpManagedConnectionFactory managedConnectionFactory;
 
   private ResponseHandler<Integer> responseHandler = new ResponseHandler<Integer>() {
     @Override
@@ -87,14 +84,6 @@ public class HttpConnectionTestCase extends HttpServerBase
   }
 
   @Test
-  public void testManagedConnectionFactory() throws ResourceException {
-    assertNotNull("managed connection factory should not be null", managedConnectionFactory);
-    assertNotNull("expected ResourceAdapter", managedConnectionFactory.getResourceAdapter());
-    assertTrue("expected HttpResourceAdapter",
-        managedConnectionFactory.getResourceAdapter() instanceof HttpResourceAdapter);
-  }
-
-  @Test
   public void testHttpConnectionClass() throws ResourceException {
     HttpConnection connection = connectionFactory.getConnection();
     assertNotNull("http connection should not be null", connection);
@@ -103,13 +92,18 @@ public class HttpConnectionTestCase extends HttpServerBase
     connection.close();
   }
 
-  @Test
+  @Test(expected = RuntimeException.class)
   @SuppressWarnings("deprecated")
-  public void testDeprecatedMethods() throws ResourceException {
-    HttpConnectionImpl connection = (HttpConnectionImpl) connectionFactory.getConnection();
-    assertNotNull("getParams should not be null", connection.getParams());
-    assertNotNull("getClientConnectionManager should not be null",
-        connection.getConnectionManager());
+  public void testGetParams() throws ResourceException {
+    HttpConnection connection = connectionFactory.getConnection();
+    connection.getParams();
+  }
+
+  @Test(expected = RuntimeException.class)
+  @SuppressWarnings("deprecated")
+  public void testGetConnectionManager() throws ResourceException {
+    HttpConnection connection = connectionFactory.getConnection();
+    connection.getConnectionManager();
   }
 
   @Test
@@ -128,7 +122,7 @@ public class HttpConnectionTestCase extends HttpServerBase
 
   @Test
   public void testExecuteHostRequestNoConsume() throws Exception {
-    HttpConnectionImpl connection = (HttpConnectionImpl) connectionFactory.getConnection();
+    HttpConnection connection = connectionFactory.getConnection();
     assertNotNull("http connection should not be null", connection);
 
     connection.execute(new HttpHost(host, port), createGetRequestEntity());
@@ -137,7 +131,7 @@ public class HttpConnectionTestCase extends HttpServerBase
 
   @Test
   public void testExecuteHostRequestContext() throws Exception {
-    HttpConnectionImpl connection = (HttpConnectionImpl) connectionFactory.getConnection();
+    HttpConnection connection = connectionFactory.getConnection();
     assertNotNull("http connection should not be null", connection);
 
     HttpHost target = new HttpHost(host, port);
@@ -151,7 +145,7 @@ public class HttpConnectionTestCase extends HttpServerBase
 
   @Test
   public void testExecuteUriRequest() throws Exception {
-    HttpConnectionImpl connection = (HttpConnectionImpl) connectionFactory.getConnection();
+    HttpConnection connection = connectionFactory.getConnection();
     assertNotNull("http connection should not be null", connection);
 
     HttpResponse response = connection.execute(new HttpGet("http://" + host + ":" + port));
@@ -164,7 +158,7 @@ public class HttpConnectionTestCase extends HttpServerBase
 
   @Test
   public void testExecuteUriRequestContext() throws Exception {
-    HttpConnectionImpl connection = (HttpConnectionImpl) connectionFactory.getConnection();
+    HttpConnection connection = connectionFactory.getConnection();
     assertNotNull("http connection should not be null", connection);
 
     HttpResponse response = connection.execute(new HttpGet("http://" + host + ":" + port), new HttpClientContext());
@@ -175,21 +169,15 @@ public class HttpConnectionTestCase extends HttpServerBase
     connection.close();
   }
 
-  @Test
+  @Test(expected = IOException.class)
   public void testBadExecute() throws Exception {
-    HttpConnectionImpl connection = (HttpConnectionImpl) connectionFactory.getConnection();
-    assertNotNull("http connection should not be null", connection);
-
-    HttpHost target = new HttpHost(host, port);
-    HttpResponse response = connection.execute(target, createBadGetRequestEntity());
-
-    assertEquals("expected 404", 404, response.getStatusLine().getStatusCode());
-    connection.close();
+    HttpConnection connection = connectionFactory.getConnection();
+    connection.execute(new HttpHost("host", port), createBadGetRequestEntity());
   }
   
   @Test
   public void testShutdown() throws Exception {
-    HttpConnectionImpl connection = (HttpConnectionImpl) connectionFactory.getConnection();
+    HttpConnection connection = connectionFactory.getConnection();
     HttpHost target = new HttpHost(host, port);
     HttpResponse response = connection.execute(target, createBadGetRequestEntity());
 
@@ -199,7 +187,7 @@ public class HttpConnectionTestCase extends HttpServerBase
 
   @Test
   public void testExecuteResponseHandler() throws Exception {
-    HttpConnectionImpl connection = (HttpConnectionImpl) connectionFactory.getConnection();
+    HttpConnection connection = connectionFactory.getConnection();
     assertNotNull("http connection should not be null", connection);
 
     Integer responseCode = connection.execute(new HttpGet("http://" + host + ":" + port), responseHandler);
@@ -221,4 +209,5 @@ public class HttpConnectionTestCase extends HttpServerBase
   public static void shutdown() {
     stopHttpServer();
   }
+
 }

@@ -1,6 +1,6 @@
 package net.luminis.httpjca.util;
 
-import net.luminis.httpjca.HttpConnectionTestCase;
+import net.luminis.httpjca.HttpConnectionITTest;
 import net.luminis.httpjca.HttpConnection;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -33,11 +33,18 @@ public class ArquillianTestUtil {
     JavaArchive ja = ShrinkWrap.create(JavaArchive.class, UUID.randomUUID().toString() + ".jar");
     ja.addPackages(true, Package.getPackage(HttpConnection.class.getPackage().getName()));
     raa.addAsLibrary(ja);
+    raa.addAsLibraries(
+        Maven.resolver().resolve("org.jacoco:org.jacoco.core:0.7.4.201502262128")
+            .withTransitivity().asFile());
+    raa.addAsLibraries(
+        Maven.resolver().resolve("org.apache.commons:commons-lang3:3.3.2")
+            .withTransitivity().asFile());
 
     raa.addAsManifestResource("META-INF/ironjacamar.xml", "ironjacamar.xml");
+    raa.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
 
     JavaArchive libjar = ShrinkWrap.create(JavaArchive.class, "lib.jar")
-        .addClasses(HttpConnectionTestCase.class)
+        .addClasses(HttpConnectionITTest.class)
         .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
 
     return ShrinkWrap.create(EnterpriseArchive.class, "test.ear")
@@ -47,6 +54,9 @@ public class ArquillianTestUtil {
             Maven.resolver().resolve("io.undertow:undertow-core:1.1.3.Final")
                 .withTransitivity().asFile())
         .addAsLibraries(
+            Maven.resolver().resolve("commons-io:commons-io:2.2")
+                .withTransitivity().asFile())
+        .addAsLibraries(
             Maven.resolver().resolve("org.apache.commons:commons-lang3:3.3.2")
                 .withTransitivity().asFile())
         .addAsLibraries(
@@ -54,7 +64,10 @@ public class ArquillianTestUtil {
                 .withTransitivity().asFile())
         .addAsLibraries(
             Maven.resolver().resolve("org.apache.httpcomponents:httpcore:4.4")
-                .withTransitivity().asFile());
-
+                .withTransitivity().asFile())
+        .addAsLibraries(
+            Maven.resolver().resolve("org.jacoco:org.jacoco.core:0.7.4.201502262128")
+                .withTransitivity().asFile())
+        .addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
   }
 }
