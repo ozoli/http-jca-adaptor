@@ -51,7 +51,7 @@ public class HttpManagedConnectionFactoryTest {
   }
   
   @Test(expected = ResourceException.class)
-  public void testNonManageed() throws ResourceException {
+  public void testNonManaged() throws ResourceException {
     connectionFactory.createConnectionFactory();
   }
   
