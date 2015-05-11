@@ -14,18 +14,20 @@
     <wildfly.version>8.2.0.Final</wildfly.version>
     <undertow.http.host>localhost</undertow.http.host>
     <undertow.http.port>8180</undertow.http.port>
+    <jacoco.version>0.7.4.201502262128</jacoco.version>
   </properties>
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.jboss.arquillian</groupId>
-                <artifactId>arquillian-bom</artifactId>
-                <version>1.1.4.Final</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+
+  <dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.jboss.arquillian</groupId>
+            <artifactId>arquillian-bom</artifactId>
+            <version>1.1.8.Final</version>
+            <scope>import</scope>
+            <type>pom</type>
+        </dependency>
+    </dependencies>
+  </dependencyManagement>
     
   <dependencies>
       <dependency>
@@ -102,7 +104,7 @@
       <dependency>
           <groupId>org.jacoco</groupId>
           <artifactId>org.jacoco.core</artifactId>
-          <version>0.7.4.201502262128</version>
+          <version>${jacoco.version}</version>
           <scope>test</scope>
       </dependency>
       <dependency>
@@ -114,7 +116,7 @@
       <dependency>
           <groupId>junit</groupId>
           <artifactId>junit</artifactId>
-          <version>4.11</version>
+          <version>4.12</version>
           <scope>test</scope>
       </dependency>
   </dependencies>
@@ -215,11 +217,12 @@
         </plugin>
         <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
-            <version>2.17</version>
+            <version>2.18.1</version>
             <configuration>
+                <argLine>-XX:-UseSplitVerifier ${jacoco.agent.argLine}</argLine>
                 <systemPropertyVariables>
                     <arquillian.launch>jboss-as7-remote</arquillian.launch>
-                    
+
                     <!-- For local builds using a JBoss AS container downloaded. -->
                     <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                     <!-- the maven dependency plugin will have already downloaded the server on /target -->
@@ -231,34 +234,117 @@
                     <undertow.http.port>${undertow.http.port}</undertow.http.port>
                 </systemPropertyVariables>
             </configuration>
+            <executions>
+                <execution>
+                    <id>unit-test</id>
+                    <phase>test</phase>
+                    <goals>
+                        <goal>test</goal>
+                    </goals>
+                    <configuration>
+                        <excludes>
+                            <exclude>**/*ITTest.java</exclude>
+                        </excludes>
+                    </configuration>
+                </execution>
+                <execution>
+                    <id>integration-test</id>
+                    <phase>integration-test</phase>
+                    <goals>
+                        <goal>test</goal>
+                    </goals>
+                    <configuration>
+                        <includes>
+                            <include>**/*ITTest.java</include>
+                        </includes>
+                    </configuration>
+                </execution>
+            </executions>
         </plugin>
-
-        <!-- Coverage analysis plugins -->
         <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.7.4.201502262128</version>
+            <version>${jacoco.version}</version>
+            <configuration>
+                <propertyName>jacoco.agent.argLine</propertyName>
+            </configuration>
             <executions>
                 <execution>
-                    <id>prepare-agent</id>
+                    <id>jacoco-initialize</id>
                     <goals>
                         <goal>prepare-agent</goal>
                     </goals>
                 </execution>
                 <execution>
-                    <id>report</id>
-                    <phase>prepare-package</phase>
+                    <id>pre-integration-test</id>
+                    <phase>pre-integration-test</phase>
+                    <goals>
+                        <goal>prepare-agent</goal>
+                    </goals>
+                </execution>
+                <execution>
+                    <id>post-integration-test</id>
+                    <phase>post-integration-test</phase>
+                    <goals>
+                        <goal>report</goal>
+                    </goals>
+                </execution>
+                <execution>
+                    <id>jacoco-site</id>
+                    <phase>verify</phase>
                     <goals>
                         <goal>report</goal>
                     </goals>
                 </execution>
             </executions>
         </plugin>
+
         <!-- Use -DrepoToken=<yourCoverallsRepoTokenId> on the command line -->
         <plugin>
             <groupId>org.eluder.coveralls</groupId>
             <artifactId>coveralls-maven-plugin</artifactId>
             <version>3.1.0</version>
+        </plugin>
+
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-site-plugin</artifactId>
+            <version>3.4</version>
+            <configuration>
+                <reportPlugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-project-info-reports-plugin</artifactId>
+                        <version>2.7</version>
+                        <configuration>
+                            <dependencyDetailsEnabled>true</dependencyDetailsEnabled>
+                            <dependencyLocationsEnabled>true</dependencyLocationsEnabled>
+                        </configuration>
+                        <!-- simpler configuration without reportSets available for usual cases -->
+                        <reports>
+                            <report>summary</report>
+                            <report>dependencies</report>
+                            <report>scm</report>
+                            <report>cim</report>
+                            <report>project-team</report>
+                            <report>distribution-management</report>
+                            <report>plugins</report>
+                        </reports>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-surefire-report-plugin</artifactId>
+                        <version>2.17</version>
+                        <configuration>
+                            <inherited>true</inherited>
+                            <aggregate>false</aggregate>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                    </plugin>
+                </reportPlugins>
+            </configuration>
         </plugin>
     </plugins>
   </build>
@@ -310,6 +396,17 @@
                     <scope>test</scope>
                 </dependency>
             </dependencies>
+        </profile>
+        <profile>
+            <id>test-dummy</id>
+            <activation>
+                <property>
+                    <name>test</name>
+                </property>
+            </activation>
+            <properties>
+                <jacoco.agent.argLine></jacoco.agent.argLine>
+            </properties>
         </profile>
     </profiles>
 
