@@ -8,9 +8,7 @@
 
     <defaultProtocol type="Servlet 3.0"/>
 
-    <container
-            qualifier="jboss-as7-remote"
-            default="true">
+    <container qualifier="jboss-as7-remote">
         <configuration>
             <property name="namespace">${wildfly.namespace}</property>
             <property name="application">${wildfly.application}</property>
@@ -20,6 +18,13 @@
             <property name="identityFile">${wildfly.identityFile}</property>
             <property name="deploymentTimeoutInSeconds">${wildfly.deploymentTimeoutInSeconds}</property>
             <property name="disableStrictHostChecking">${wildfly.disableStrictHostChecking}</property>
+        </configuration>
+    </container>
+
+    <container qualifier="wildfly-embedded" default="true">
+        <configuration>
+            <property name="jbossHome">${project.basedir}/target/wildfly-8.2.0.Final</property>
+            <property name="modulePath">${project.basedir}/target/wildfly-8.2.0.Final/modules</property>
         </configuration>
     </container>
 

@@ -12,8 +12,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <version.shrinkwrap.resolvers>2.0.0-alpha-1</version.shrinkwrap.resolvers>
     <wildfly.version>8.2.0.Final</wildfly.version>
-    <undertow.http.host>localhost</undertow.http.host>
-    <undertow.http.port>8180</undertow.http.port>
+    <UNDERTOW_HTTP_HOST>localhost</UNDERTOW_HTTP_HOST>
+    <UNDERTOW_HTTP_PORT>8180</UNDERTOW_HTTP_PORT>
     <jacoco.version>0.7.4.201502262128</jacoco.version>
   </properties>
 
@@ -220,8 +220,8 @@
             <version>2.18.1</version>
             <configuration>
                 <argLine>-XX:-UseSplitVerifier ${jacoco.agent.argLine}</argLine>
-                <systemPropertyVariables>
-                    <arquillian.launch>jboss-as7-remote</arquillian.launch>
+                <systemProperties>
+                    <arquillian.launch>${arquillian.type}</arquillian.launch>
 
                     <!-- For local builds using a JBoss AS container downloaded. -->
                     <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
@@ -230,9 +230,9 @@
                     <module.path>${project.basedir}/target/wildfly-${wildfly.version}/modules</module.path>
                     <javaVmArguments>-Xms1024m -Xmx2048m -XX:PermSize=512M -XX:MaxPermSize=512 -XX:+CMSClassUnloadingEnabled</javaVmArguments>
 
-                    <undertow.http.host>${undertow.http.host}</undertow.http.host>
-                    <undertow.http.port>${undertow.http.port}</undertow.http.port>
-                </systemPropertyVariables>
+                    <UNDERTOW_HTTP_HOST>${UNDERTOW_HTTP_HOST}</UNDERTOW_HTTP_HOST>
+                    <UNDERTOW_HTTP_PORT>${UNDERTOW_HTTP_PORT}</UNDERTOW_HTTP_PORT>
+                </systemProperties>
             </configuration>
             <executions>
                 <execution>
@@ -358,6 +358,7 @@
             <properties>
                 <wildfly.config>${user.home}/config</wildfly.config>
                 <wildfly.download.skip>false</wildfly.download.skip>
+                <arquillian.type>wildfly-embedded</arquillian.type>
             </properties>
 
             <dependencies>
@@ -380,6 +381,7 @@
             <properties>
                 <wildfly.config>${wildfly.config.location}</wildfly.config>
                 <wildfly.download.skip>true</wildfly.download.skip>
+                <arquillian.type>jboss-as7-remote</arquillian.type>
             </properties>
             
             <dependencies>
@@ -406,6 +408,7 @@
             </activation>
             <properties>
                 <jacoco.agent.argLine></jacoco.agent.argLine>
+                <arquillian.type></arquillian.type>
             </properties>
         </profile>
     </profiles>
