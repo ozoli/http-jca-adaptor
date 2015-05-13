@@ -62,8 +62,10 @@ public class HttpServerBase {
   }
 
   protected void stopHttpServer() {
-    LOG.info("Stopping HTTP Server");
-    httpServer.stop();
+    if (httpServer != null) {
+      LOG.info("Stopping HTTP Server");
+      httpServer.stop();
+    }
   }
   
   protected void buildHttpServer(final String host, final int port) {
