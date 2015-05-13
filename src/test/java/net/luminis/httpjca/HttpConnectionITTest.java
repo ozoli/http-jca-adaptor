@@ -29,6 +29,7 @@ import net.luminis.httpjca.util.HttpServerBase;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
+import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.protocol.HttpClientContext;
@@ -37,8 +38,8 @@ import org.jboss.arquillian.junit.Arquillian;
 
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -52,12 +53,17 @@ import static org.junit.Assert.*;
 @RunWith(Arquillian.class)
 public class HttpConnectionITTest extends HttpServerBase {
 
-  @BeforeClass
-  public static void setup() {
-    buildHttpServer();
+  private String host;
+  private int port;
+
+  @Before
+  public void setup() {
+    host = System.getProperty("UNDERTOW_HTTP_HOST");
+    port = Integer.valueOf(System.getProperty("UNDERTOW_HTTP_PORT"));
+    buildHttpServer(host, port);
     startHttpServer();
   }
-  
+
   @Resource(mappedName = "java:/eis/HttpConnectionFactory")
   private HttpConnectionFactory connectionFactory;
 
@@ -169,20 +175,21 @@ public class HttpConnectionITTest extends HttpServerBase {
     connection.close();
   }
 
+  /**
+   * Use bad hostname "host"
+   *
+   * @throws Exception an {@link IOException} is expected.
+   */
   @Test(expected = IOException.class)
   public void testBadExecute() throws Exception {
     HttpConnection connection = connectionFactory.getConnection();
     connection.execute(new HttpHost("host", port), createBadGetRequestEntity());
   }
   
-  @Test
+  @Test(expected = NoHttpResponseException.class)
   public void testShutdown() throws Exception {
     HttpConnection connection = connectionFactory.getConnection();
-    HttpHost target = new HttpHost(host, port);
-    HttpResponse response = connection.execute(target, createBadGetRequestEntity());
-
-    assertEquals("expected 200 OK", 200, response.getStatusLine().getStatusCode());
-    connection.close();
+    connection.execute(new HttpHost(host, port), createBadGetRequestEntity());
   }
 
   @Test
@@ -205,8 +212,8 @@ public class HttpConnectionITTest extends HttpServerBase {
     connection.close();
   }
 
-  @AfterClass
-  public static void shutdown() {
+  @After
+  public void shutdown() {
     stopHttpServer();
   }
 

@@ -8,9 +8,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.resource.NotSupportedException;
@@ -25,7 +23,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 import static org.junit.Assert.*;
 
@@ -40,15 +37,15 @@ public class HttpManagedConnectionTest extends HttpServerBase {
   private CloseableHttpClient client = HttpClients.custom().setConnectionManager(
       new BasicHttpClientConnectionManager()).build();
   private final File logWritierFile = new File("aFile");
+  private String host;
+  private int port;
 
-  @BeforeClass
-  public static void start() {
-    buildHttpServer();
-    startHttpServer();
-  }
-     
   @Before
-  public void setup() throws Exception {
+  public void start() throws ResourceException {
+    host = System.getProperty("UNDERTOW_HTTP_HOST");
+    port = Integer.valueOf(System.getProperty("UNDERTOW_HTTP_PORT"));
+    buildHttpServer(host, port);
+    startHttpServer();
     managedConnection = new HttpManagedConnection(new HttpManagedConnectionFactory(), client);
   }
 
@@ -153,13 +150,23 @@ public class HttpManagedConnectionTest extends HttpServerBase {
     assertTrue("wrong instance", connection instanceof HttpManagedConnection);
     httpManagedConnection = (HttpManagedConnection) connection;
     assertEquals("wrong instance", managedConnection, httpManagedConnection);
+  }
 
+  @Test
+  public void testMatchConnectionsGoodAndBad() throws ResourceException {
+    Set<ManagedConnection> matchConnections = new HashSet<>();
+    matchConnections.add(managedConnection);
+    matchConnections.add(new TesManagedConnection());
+    HttpManagedConnectionFactory factory = new HttpManagedConnectionFactory();
+    ManagedConnection connection = factory.matchManagedConnections(matchConnections, null, null);
+    assertNotNull("expect not null", connection);
+    // expdct a HttpManagedConnection since it is first in the collection.
+    assertTrue("wrong instance", connection instanceof HttpManagedConnection);
   }
 
   @After
   public void testDestroy() throws ResourceException {
     managedConnection.destroy();
-
     FileUtils.deleteQuietly(logWritierFile);
   }
 
@@ -248,8 +255,9 @@ public class HttpManagedConnectionTest extends HttpServerBase {
       return null;
     }
   }
-  @AfterClass
-  public static void stop() {
+
+  @After
+  public void stop() {
     stopHttpServer();
   }
 }

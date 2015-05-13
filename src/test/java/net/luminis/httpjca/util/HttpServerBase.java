@@ -13,13 +13,10 @@ import java.util.logging.Logger;
 /**
  * A base HttpServer implementation for different tests to use.
  */
-public abstract class HttpServerBase {
+public class HttpServerBase {
   private static final Logger LOG = Logger.getLogger(HttpServerBase.class.getName());
 
-  private static Undertow httpServer;
-
-  protected static String host = System.getProperty("UNDERTOW_HTTP_HOST", "localhost");
-  protected static int port = Integer.valueOf(System.getProperty("UNDERTOW_HTTP_PORT", "8180"));
+  private Undertow httpServer;
 
   protected static BasicHttpEntityEnclosingRequest createGetRequestEntity() {
     return new BasicHttpEntityEnclosingRequest(new RequestLine() {
@@ -59,18 +56,20 @@ public abstract class HttpServerBase {
     });
   }
 
-  protected static void startHttpServer() {
-    LOG.info("Starting HTTP Server host " + host + ":" + port);
-    HttpServerBase.httpServer.start();
+  protected void startHttpServer() {
+    LOG.info("Starting HTTP Server");
+    httpServer.start();
   }
 
-  protected static void stopHttpServer() {
-    LOG.info("Stopping HTTP Server host " + host + ":" + port);
-    HttpServerBase.httpServer.stop();
+  protected void stopHttpServer() {
+    LOG.info("Stopping HTTP Server");
+    httpServer.stop();
   }
   
-  protected static void buildHttpServer() {
-    HttpServerBase.httpServer = Undertow.builder()
+  protected void buildHttpServer(final String host, final int port) {
+    LOG.info("Building HTTP Server on host " + host + " port " + port);
+
+    httpServer = Undertow.builder()
         .addHttpListener(port, host)
         .setHandler(new HttpHandler() {
           @Override
