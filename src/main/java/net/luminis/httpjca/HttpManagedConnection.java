@@ -19,14 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package eu.luminis.httpjca;
+package net.luminis.httpjca;
 
-import org.apache.http.*;
-import org.apache.http.impl.DefaultHttpRequestFactory;
 
-import java.io.IOException;
+import org.apache.http.HttpClientConnection;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
+
 import java.io.PrintWriter;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -49,13 +51,9 @@ import javax.transaction.xa.XAResource;
  *
  * @version $Revision: $
  */
-public class HttpManagedConnection implements ManagedConnection
-{
+public class HttpManagedConnection implements ManagedConnection {
+   private static final Logger LOG = Logger.getLogger(HttpManagedConnection.class.getName());
 
-   /** The logger */
-   private static Logger log = Logger.getLogger(HttpManagedConnection.class.getName());
-
-   /** The logwriter */
    private PrintWriter logwriter;
 
    /** ManagedConnectionFactory */
@@ -67,22 +65,38 @@ public class HttpManagedConnection implements ManagedConnection
    /** Connection */
    private HttpConnectionImpl connection;
 
-   /** Socket */
-   private Socket socket;
+   /**
+    * The underlying {@link HttpClientConnection}.
+    */
+   private CloseableHttpClient httpClient;
+
+   /**
+    * local reference top the {@link HttpResponse} to make sure it is consumed correctly.
+    */
+   private HttpResponse httpResponse;
 
    /**
     * Default constructor
     * @param mcf mcf
+    * @param httpClient HTTP Client underlying
     */
-   public HttpManagedConnection(HttpManagedConnectionFactory mcf) throws ResourceException
-   {
+   public HttpManagedConnection(HttpManagedConnectionFactory mcf, CloseableHttpClient httpClient)
+       throws ResourceException {
       this.mcf = mcf;
       this.logwriter = null;
       this.listeners = Collections.synchronizedList(new ArrayList<ConnectionEventListener>(1));
-      this.connection = null;
-      this.socket = null; // TODO: Initialize me
+      this.httpClient = httpClient;
+      this.connection = new HttpConnectionImpl(this, mcf);
    }
 
+   /**
+    * @return the underlying {@link org.apache.http.HttpClientConnection}
+    */
+   HttpClient getHttpClient() {
+      consumeHttpResponse();
+      return httpClient;
+   }
+   
    /**
     * Creates a new connection handle for the underlying physical connection 
     * represented by the ManagedConnection instance. 
@@ -92,10 +106,10 @@ public class HttpManagedConnection implements ManagedConnection
     * @return generic Object instance representing the connection handle. 
     * @throws ResourceException generic exception if operation fails
     */
+   @Override
    public Object getConnection(Subject subject,
-      ConnectionRequestInfo cxRequestInfo) throws ResourceException
-   {
-      log.finest("getConnection()");
+      ConnectionRequestInfo cxRequestInfo) throws ResourceException {
+      LOG.finest("getConnection()");
       connection = new HttpConnectionImpl(this, mcf);
       return connection;
    }
@@ -107,17 +121,18 @@ public class HttpManagedConnection implements ManagedConnection
     * @param connection Application-level connection handle
     * @throws ResourceException generic exception if operation fails
     */
-   public void associateConnection(Object connection) throws ResourceException
-   {
-      log.finest("associateConnection()");
+   @Override
+   public void associateConnection(final Object connection) throws ResourceException {
+      LOG.finest("associateConnection()");
 
-      if (connection == null)
+      if (connection == null) {
+         LOG.severe("NULL connection passed to associateConnection()");
          throw new ResourceException("Null connection handle");
-
-      if (!(connection instanceof HttpConnectionImpl))
+      } else if (!(connection instanceof HttpConnectionImpl)) {
+         LOG.severe("Wrong type of connection passed to associateConnection");
          throw new ResourceException("Wrong connection handle");
-
-      this.connection = (HttpConnectionImpl)connection;
+      }
+      this.connection = (HttpConnectionImpl) connection;
    }
 
    /**
@@ -125,16 +140,9 @@ public class HttpManagedConnection implements ManagedConnection
     *
     * @throws ResourceException generic exception if operation fails
     */
-   public void cleanup() throws ResourceException
-   {
-      log.finest("cleanup()");
-      if (connection != null) {
-        try {
-          connection.flush();
-        } catch (IOException e) {
-            throw new ResourceException(e);
-        }
-      }
+   public void cleanup() throws ResourceException {
+      LOG.finest("cleanup()");
+      consumeHttpResponse();
    }
 
    /**
@@ -142,23 +150,9 @@ public class HttpManagedConnection implements ManagedConnection
     *
     * @throws ResourceException generic exception if operation fails
     */
-   public void destroy() throws ResourceException
-   {
-      log.finest("destroy()");
-
-      if (socket != null)
-      {
-         try
-         {
-            socket.close();
-         }
-         catch (IOException ioe)
-         {
-            // Ignore
-         }
-
-      }
-
+   public void destroy() throws ResourceException {
+      LOG.finest("destroy()");
+      consumeHttpResponse();
    }
 
    /**
@@ -166,11 +160,11 @@ public class HttpManagedConnection implements ManagedConnection
     *
     * @param listener A new ConnectionEventListener to be registered
     */
-   public void addConnectionEventListener(ConnectionEventListener listener)
-   {
-      log.finest("addConnectionEventListener()");
-      if (listener == null)
+   public void addConnectionEventListener(ConnectionEventListener listener) {
+      LOG.finest("addConnectionEventListener()");
+      if (listener == null) {
          throw new IllegalArgumentException("Listener is null");
+      }
       listeners.add(listener);
    }
 
@@ -179,28 +173,27 @@ public class HttpManagedConnection implements ManagedConnection
     *
     * @param listener already registered connection event listener to be removed
     */
-   public void removeConnectionEventListener(ConnectionEventListener listener)
-   {
-      log.finest("removeConnectionEventListener()");
-      if (listener == null)
+   public void removeConnectionEventListener(ConnectionEventListener listener) {
+      LOG.finest("removeConnectionEventListener()");
+      if (listener == null) {
+         LOG.severe("ConnectionEventListener is NULL");
          throw new IllegalArgumentException("Listener is null");
+      }
       listeners.remove(listener);
    }
 
    /**
-    * Close handle
+    * Close connection
     *
-    * @param handle The handle
+    * @param connection The connection
     */
-   void closeHandle(HttpConnection handle)
-   {
+   void closeHandle(HttpConnection connection) {
+      consumeHttpResponse();
       ConnectionEvent event = new ConnectionEvent(this, ConnectionEvent.CONNECTION_CLOSED);
-      event.setConnectionHandle(handle);
-      for (ConnectionEventListener cel : listeners)
-      {
+      event.setConnectionHandle(connection);
+      for (final ConnectionEventListener cel : listeners) {
          cel.connectionClosed(event);
       }
-
    }
 
    /**
@@ -209,9 +202,8 @@ public class HttpManagedConnection implements ManagedConnection
     * @return Character output stream associated with this Managed-Connection instance
     * @throws ResourceException generic exception if operation fails
     */
-   public PrintWriter getLogWriter() throws ResourceException
-   {
-      log.finest("getLogWriter()");
+   public PrintWriter getLogWriter() throws ResourceException {
+      LOG.finest("getLogWriter()");
       return logwriter;
    }
 
@@ -221,9 +213,8 @@ public class HttpManagedConnection implements ManagedConnection
     * @param out Character Output stream to be associated
     * @throws ResourceException  generic exception if operation fails
     */
-   public void setLogWriter(PrintWriter out) throws ResourceException
-   {
-      log.finest("setLogWriter()");
+   public void setLogWriter(PrintWriter out) throws ResourceException {
+      LOG.finest("setLogWriter()");
       logwriter = out;
    }
 
@@ -233,8 +224,7 @@ public class HttpManagedConnection implements ManagedConnection
     * @return LocalTransaction instance
     * @throws ResourceException generic exception if operation fails
     */
-   public LocalTransaction getLocalTransaction() throws ResourceException
-   {
+   public LocalTransaction getLocalTransaction() throws ResourceException {
       throw new NotSupportedException("getLocalTransaction() not supported");
    }
 
@@ -244,8 +234,7 @@ public class HttpManagedConnection implements ManagedConnection
     * @return XAResource instance
     * @throws ResourceException generic exception if operation fails
     */
-   public XAResource getXAResource() throws ResourceException
-   {
+   public XAResource getXAResource() throws ResourceException {
       throw new NotSupportedException("getXAResource() not supported");
    }
 
@@ -255,10 +244,28 @@ public class HttpManagedConnection implements ManagedConnection
     * @return ManagedConnectionMetaData instance
     * @throws ResourceException generic exception if operation fails
     */
-   public ManagedConnectionMetaData getMetaData() throws ResourceException
-   {
-      log.finest("getMetaData()");
+   public ManagedConnectionMetaData getMetaData() throws ResourceException {
+      LOG.finest("getMetaData()");
       return new HttpManagedConnectionMetaData();
    }
 
+   /**
+    * @return the {@link HttpResponse} so it can be consumed if needed
+    */
+   public HttpResponse getHttpResponse() {
+      return httpResponse;
+   }
+
+   /**
+    * @param httpResponse the {@link HttpResponse} so it can be consumed if needed
+    */
+   public void setHttpResponse(HttpResponse httpResponse) {
+      this.httpResponse = httpResponse;
+   }
+
+   private void consumeHttpResponse() {
+      if (httpResponse != null) {
+         EntityUtils.consumeQuietly(httpResponse.getEntity());
+      }
+   }
 }

@@ -26,19 +26,16 @@
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://www.ironjacamar.org/doc/schema 
              http://www.ironjacamar.org/doc/schema/ironjacamar_1_1.xsd">
-  <config-property name="hostUrl">localhost</config-property>
-  <config-property name="hostPort">8080</config-property>
 
   <transaction-support>NoTransaction</transaction-support>
   
   <connection-definitions>
-    <connection-definition class-name="eu.luminis.httpjca.HttpManagedConnectionFactory" jndi-name="java:/eis/HttpConnectionFactory" pool-name="HttpConnectionFactory">
+    <connection-definition class-name="net.luminis.httpjca.HttpManagedConnectionFactory"
+                           jndi-name="java:/eis/HttpConnectionFactory" 
+                           pool-name="HttpConnectionFactory">
       <config-property name="host">localhost</config-property>
       <config-property name="port">8080</config-property>
-      <config-property name="host">localhost</config-property>
-      <config-property name="port">1400</config-property>
     </connection-definition>
   </connection-definitions>
-
 
 </ironjacamar>

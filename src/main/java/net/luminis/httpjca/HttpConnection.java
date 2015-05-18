@@ -1,4 +1,3 @@
-<!--
 /*
  * IronJacamar, a Java EE Connector Architecture implementation
  * Copyright 2013, Red Hat Inc, and individual contributors
@@ -20,12 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
--->
+package net.luminis.httpjca;
 
-<deployment>
-  <bean name="Http" interface="eu.luminis.httpjca.mbean.HttpMBean" class="eu.luminis.httpjca.mbean.HttpMBeanImpl">
-    <property name="MBeanServer">
-        <inject bean="Kernel" property="MBeanServer"/>
-    </property>
-  </bean>
-</deployment>
+import org.apache.http.client.HttpClient;
+
+/**
+ * HttpConnection
+ *
+ * @version $Revision: $
+ */
+public interface HttpConnection extends HttpClient {
+
+   /**
+    * Close
+    */
+   void close();
+}

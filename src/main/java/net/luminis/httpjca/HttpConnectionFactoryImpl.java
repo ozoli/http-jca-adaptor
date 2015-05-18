@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package eu.luminis.httpjca;
+package net.luminis.httpjca;
 
 import java.util.logging.Logger;
 
@@ -30,33 +30,25 @@ import javax.resource.ResourceException;
 import javax.resource.spi.ConnectionManager;
 
 /**
- * HttpConnectionFactoryImpl
+ * Implementation of the {@link }HttpConnectionFactory}.
  *
  * @version $Revision: $
  */
-public class HttpConnectionFactoryImpl implements HttpConnectionFactory
-{
-   /** The serial version UID */
+public class HttpConnectionFactoryImpl implements HttpConnectionFactory {
    private static final long serialVersionUID = 1L;
 
-   /** The logger */
-   private static Logger log = Logger.getLogger(HttpConnectionFactoryImpl.class.getName());
+   private static final Logger LOG = Logger.getLogger(HttpConnectionFactoryImpl.class.getName());
 
-   /** Reference */
    private Reference reference;
 
-   /** ManagedConnectionFactory */
    private HttpManagedConnectionFactory mcf;
 
-   /** ConnectionManager */
    private ConnectionManager connectionManager;
 
    /**
     * Default constructor
     */
-   public HttpConnectionFactoryImpl()
-   {
-
+   public HttpConnectionFactoryImpl() {
    }
 
    /**
@@ -64,8 +56,7 @@ public class HttpConnectionFactoryImpl implements HttpConnectionFactory
     * @param mcf ManagedConnectionFactory
     * @param cxManager ConnectionManager
     */
-   public HttpConnectionFactoryImpl(HttpManagedConnectionFactory mcf, ConnectionManager cxManager)
-   {
+   public HttpConnectionFactoryImpl(HttpManagedConnectionFactory mcf, ConnectionManager cxManager) {
       this.mcf = mcf;
       this.connectionManager = cxManager;
    }
@@ -77,9 +68,8 @@ public class HttpConnectionFactoryImpl implements HttpConnectionFactory
     * @exception ResourceException Thrown if a connection can't be obtained
     */
    @Override
-   public HttpConnection getConnection() throws ResourceException
-   {
-      log.finest("getConnection()");
+   public HttpConnection getConnection() throws ResourceException {
+      LOG.finest("getConnection()");
       return (HttpConnection)connectionManager.allocateConnection(mcf, null);
    }
 
@@ -90,9 +80,8 @@ public class HttpConnectionFactoryImpl implements HttpConnectionFactory
     * @exception NamingException Thrown if a reference can't be obtained
     */
    @Override
-   public Reference getReference() throws NamingException
-   {
-      log.finest("getReference()");
+   public Reference getReference() throws NamingException {
+      LOG.finest("getReference()");
       return reference;
    }
 
@@ -102,11 +91,8 @@ public class HttpConnectionFactoryImpl implements HttpConnectionFactory
     * @param reference A Reference instance
     */
    @Override
-   public void setReference(Reference reference)
-   {
-      log.finest("setReference()");
+   public void setReference(Reference reference) {
+      LOG.finest("setReference()");
       this.reference = reference;
    }
-
-
 }

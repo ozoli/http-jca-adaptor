@@ -19,7 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package eu.luminis.httpjca;
+package net.luminis.httpjca;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.logging.Logger;
 
@@ -36,71 +39,64 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.xa.XAResource;
 
 /**
- * HttpResourceAdapter
+ * HttpResourceAdapter impldmenation of the {@link ResourceAdapter} interface.
  *
  * @version $Revision: $
  */
 @Connector(
-   reauthenticationSupport = false,
-   transactionSupport = TransactionSupport.TransactionSupportLevel.NoTransaction)
-public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializable
-{
-
-   /** The serial version UID */
+    description = "HTTP Resource Adapter using the Apache HttpConnection API",
+    displayName = "HttpResourceAdapter",
+    vendorName = "Luminis",
+    eisType = "HTTP",
+    version = "0.0.1",
+    reauthenticationSupport = false,
+    transactionSupport = TransactionSupport.TransactionSupportLevel.NoTransaction)
+public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializable {
    private static final long serialVersionUID = 1L;
 
-   /** The logger */
-   private static Logger log = Logger.getLogger(HttpResourceAdapter.class.getName());
+   private static final Logger LOG = Logger.getLogger(HttpResourceAdapter.class.getName());
 
-   /** hostUrl */
    @ConfigProperty(defaultValue = "localhost")
    private String hostUrl;
 
-   /** hostPort */
    @ConfigProperty(defaultValue = "8080")
    private Integer hostPort;
 
    /**
-    * Default constructor
+    * Default constructor, needed for JCA specification compliance.
     */
-   public HttpResourceAdapter()
-   {
-
+   public HttpResourceAdapter() {
    }
 
    /** 
     * Set hostUrl
-    * @param hostUrl The value
+    * @param hostUrl The host URL to use
     */
-   public void setHostUrl(String hostUrl)
-   {
+   public void setHostUrl(String hostUrl) {
       this.hostUrl = hostUrl;
    }
 
    /** 
     * Get hostUrl
-    * @return The value
+    * @return The host URL
     */
-   public String getHostUrl()
-   {
+   public String getHostUrl() {
       return hostUrl;
    }
 
    /** 
     * Set hostPort
-    * @param hostPort The value
+    * @param hostPort The HTTP port
     */
-   public void setHostPort(Integer hostPort)
-   {
+   public void setHostPort(Integer hostPort) {
       this.hostPort = hostPort;
    }
 
    /** 
     * Get hostPort
-    * @return The value
+    * @return The HTTP port
     */
-   public Integer getHostPort()
-   {
+   public Integer getHostPort() {
       return hostPort;
    }
 
@@ -112,10 +108,8 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
     * @throws ResourceException generic exception 
     */
    public void endpointActivation(MessageEndpointFactory endpointFactory,
-      ActivationSpec spec) throws ResourceException
-   {
-      log.finest("endpointActivation()");
-
+      ActivationSpec spec) throws ResourceException {
+      LOG.finest("endpointActivation()");
    }
 
    /**
@@ -125,10 +119,8 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
     * @param spec An activation spec JavaBean instance.
     */
    public void endpointDeactivation(MessageEndpointFactory endpointFactory,
-      ActivationSpec spec)
-   {
-      log.finest("endpointDeactivation()");
-
+      ActivationSpec spec) {
+      LOG.finest("endpointDeactivation()");
    }
 
    /**
@@ -138,20 +130,16 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
     * @throws ResourceAdapterInternalException indicates bootstrap failure.
     */
    public void start(BootstrapContext ctx)
-      throws ResourceAdapterInternalException
-   {
-      log.finest("start()");
-
+      throws ResourceAdapterInternalException {
+      LOG.info("start()");
    }
 
    /**
     * This is called when a resource adapter instance is undeployed or
     * during application server shutdown. 
     */
-   public void stop()
-   {
-      log.finest("stop()");
-
+   public void stop() {
+      LOG.info("stop()");
    }
 
    /**
@@ -162,9 +150,8 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
     * @return An array of XAResource objects
     */
    public XAResource[] getXAResources(ActivationSpec[] specs)
-      throws ResourceException
-   {
-      log.finest("getXAResources()");
+      throws ResourceException {
+      LOG.warning("getXAResources() returning NULL");
       return null;
    }
 
@@ -173,18 +160,8 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
     * @return A hash code value for this object.
     */
    @Override
-   public int hashCode()
-   {
-      int result = 17;
-      if (hostUrl != null)
-         result += 31 * result + 7 * hostUrl.hashCode();
-      else
-         result += 31 * result + 7;
-      if (hostPort != null)
-         result += 31 * result + 7 * hostPort.hashCode();
-      else
-         result += 31 * result + 7;
-      return result;
+   public int hashCode() {
+     return new HashCodeBuilder().append(hostUrl).append(hostPort).hashCode();
    }
 
    /** 
@@ -193,31 +170,17 @@ public class HttpResourceAdapter implements ResourceAdapter, java.io.Serializabl
     * @return true if this object is the same as the obj argument, false otherwise.
     */
    @Override
-   public boolean equals(Object other)
-   {
-      if (other == null)
-         return false;
-      if (other == this)
-         return true;
-      if (!(other instanceof HttpResourceAdapter))
-         return false;
-      boolean result = true;
-      HttpResourceAdapter obj = (HttpResourceAdapter)other;
-      if (result)
-      {
-         if (hostUrl == null)
-            result = obj.getHostUrl() == null;
-         else
-            result = hostUrl.equals(obj.getHostUrl());
-      }
-      if (result)
-      {
-         if (hostPort == null)
-            result = obj.getHostPort() == null;
-         else
-            result = hostPort.equals(obj.getHostPort());
-      }
-      return result;
+   public boolean equals(final Object other) {
+     if (other == null) {
+       return false;
+     } else if (other == this) {
+       return true;
+     } else if (!(other instanceof HttpResourceAdapter)) {
+        return false;
+     } else {
+       HttpResourceAdapter otherHttpRA = (HttpResourceAdapter) other;
+       return new EqualsBuilder().append(getHostUrl(), otherHttpRA.getHostUrl())
+                                 .append(getHostPort(), otherHttpRA.getHostPort()).isEquals();
+     }
    }
-
 }

@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package eu.luminis.httpjca;
+package net.luminis.httpjca;
 
 import java.util.logging.Logger;
 
@@ -32,17 +32,16 @@ import javax.resource.spi.ManagedConnectionMetaData;
  *
  * @version $Revision: $
  */
-public class HttpManagedConnectionMetaData implements ManagedConnectionMetaData
-{
-   /** The logger */
-   private static Logger log = Logger.getLogger(HttpManagedConnectionMetaData.class.getName());
+public class HttpManagedConnectionMetaData implements ManagedConnectionMetaData {
+   private static final Logger LOG = Logger.getLogger(HttpManagedConnectionMetaData.class.getName());
 
+   private static final String APACHE_HTTP_CLIENT = "Apache Http Client";
+   private static final String APACHE_HTTP_CLIENT_VERSION = "4.4";
+   
    /**
     * Default constructor
     */
-   public HttpManagedConnectionMetaData()
-   {
-
+   public HttpManagedConnectionMetaData() {
    }
 
    /**
@@ -52,10 +51,9 @@ public class HttpManagedConnectionMetaData implements ManagedConnectionMetaData
     * @throws ResourceException Thrown if an error occurs
     */
    @Override
-   public String getEISProductName() throws ResourceException
-   {
-      log.finest("getEISProductName()");
-      return null; //TODO
+   public String getEISProductName() throws ResourceException {
+      LOG.finest("getEISProductName()");
+      return APACHE_HTTP_CLIENT;
    }
 
    /**
@@ -65,10 +63,9 @@ public class HttpManagedConnectionMetaData implements ManagedConnectionMetaData
     * @throws ResourceException Thrown if an error occurs
     */
    @Override
-   public String getEISProductVersion() throws ResourceException
-   {
-      log.finest("getEISProductVersion()");
-      return null; //TODO
+   public String getEISProductVersion() throws ResourceException {
+      LOG.finest("getEISProductVersion()");
+      return APACHE_HTTP_CLIENT_VERSION;
    }
 
    /**
@@ -78,9 +75,8 @@ public class HttpManagedConnectionMetaData implements ManagedConnectionMetaData
     * @throws ResourceException Thrown if an error occurs
     */
    @Override
-   public int getMaxConnections() throws ResourceException
-   {
-      log.finest("getMaxConnections()");
+   public int getMaxConnections() throws ResourceException {
+      LOG.finest("getMaxConnections()");
       return 0; //TODO
    }
 
@@ -91,11 +87,8 @@ public class HttpManagedConnectionMetaData implements ManagedConnectionMetaData
     * @throws ResourceException Thrown if an error occurs
     */
    @Override
-   public String getUserName() throws ResourceException
-   {
-      log.finest("getUserName()");
-      return null; //TODO
+   public String getUserName() throws ResourceException {
+      LOG.finest("getUserName() returning null");
+      return null;
    }
-
-
 }

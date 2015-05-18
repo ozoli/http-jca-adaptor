@@ -19,35 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package eu.luminis.httpjca;
+package net.luminis.httpjca;
 
-import org.jboss.jca.test.eis.Handler;
+import java.io.Serializable;
 
-import java.io.InputStream;
-import java.io.OutputStream;
+import javax.resource.Referenceable;
+import javax.resource.ResourceException;
 
 /**
- * HttpHandler
+ * HttpConnectionFactory
  *
  * @version $Revision: $
  */
-/** Echo handler */
-public class HttpHandler implements Handler
-{
-   /**
-    * Default constructor
+public interface HttpConnectionFactory extends Serializable, Referenceable {
+   /** 
+    * Get connection from factory
+    *
+    * @return HttpConnection instance
+    * @exception ResourceException Thrown if a connection can't be obtained
     */
-   public HttpHandler()
-   {
-
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void handle(InputStream is, OutputStream os)
-   {
-      // TODO: Implement me
-   }
-
+   HttpConnection getConnection() throws ResourceException;
 }

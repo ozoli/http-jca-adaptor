@@ -19,7 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package eu.luminis.httpjca;
+package net.luminis.httpjca;
+
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.conn.routing.HttpRoute;
+import org.apache.http.conn.routing.HttpRoutePlanner;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
+import org.apache.http.impl.conn.DefaultRoutePlanner;
+import org.apache.http.impl.conn.DefaultSchemePortResolver;
+import org.apache.http.protocol.HttpContext;
 
 import java.io.PrintWriter;
 import java.util.Iterator;
@@ -48,135 +63,133 @@ import javax.security.auth.Subject;
    connectionFactoryImpl = HttpConnectionFactoryImpl.class,
    connection = HttpConnection.class,
    connectionImpl = HttpConnectionImpl.class)
-public class HttpManagedConnectionFactory implements ManagedConnectionFactory, ResourceAdapterAssociation
-{
-
-   /** The serial version UID */
+public class HttpManagedConnectionFactory implements ManagedConnectionFactory, ResourceAdapterAssociation {
    private static final long serialVersionUID = 1L;
 
-   /** The logger */
-   private static Logger log = Logger.getLogger(HttpManagedConnectionFactory.class.getName());
+   private static final Logger LOG = Logger.getLogger(HttpManagedConnectionFactory.class.getName());
 
-   /** The resource adapter */
-   private ResourceAdapter ra;
+   private ResourceAdapter resourceAdapter;
 
-   /** The logwriter */
    private PrintWriter logwriter;
 
-   /** host */
    @ConfigProperty(defaultValue = "localhost")
    private String host;
 
-   /** port */
    @ConfigProperty(defaultValue = "1400")
    private Integer port;
 
    /**
+    * Basic Http Connection Pool for the {@link HttpManagedConnection}s.
+    */
+   private final BasicHttpClientConnectionManager connectionManager = new BasicHttpClientConnectionManager();
+
+   // A default route planner if the host and port are not specified.
+   private final HttpRoutePlanner routePlanner = new DefaultRoutePlanner(DefaultSchemePortResolver.INSTANCE) {
+      @Override
+      public HttpRoute determineRoute(final HttpHost target, final HttpRequest request, final HttpContext context)
+          throws HttpException {
+         return super.determineRoute(target, request, context);
+      }
+   };
+
+   /**
     * Default constructor
     */
-   public HttpManagedConnectionFactory()
-   {
-
+   public HttpManagedConnectionFactory() {
    }
-
-   /** 
+   
+   /**
     * Set host
     * @param host The value
     */
-   public void setHost(String host)
-   {
+   public void setHost(final String host) {
       this.host = host;
    }
 
-   /** 
+   /**
     * Get host
     * @return The value
     */
-   public String getHost()
-   {
+   public String getHost() {
       return host;
    }
 
-   /** 
+   /**
     * Set port
+    *
     * @param port The value
     */
-   public void setPort(Integer port)
-   {
+   public void setPort(final Integer port) {
       this.port = port;
    }
 
-   /** 
+   /**
     * Get port
+    *
     * @return The value
     */
-   public Integer getPort()
-   {
+   public Integer getPort() {
       return port;
    }
-  
+
    /**
-    * Creates a Connection Factory instance. 
+    * Creates a Connection Factory instance.
     *
     * @param cxManager ConnectionManager to be associated with created EIS connection factory instance
     * @return EIS-specific Connection Factory instance or javax.resource.cci.ConnectionFactory instance
     * @throws ResourceException Generic exception
     */
-   public Object createConnectionFactory(ConnectionManager cxManager) throws ResourceException
-   {
-      log.finest("createConnectionFactory()");
+   public Object createConnectionFactory(ConnectionManager cxManager) throws ResourceException {
+      LOG.finest("createConnectionFactory()");
       return new HttpConnectionFactoryImpl(this, cxManager);
    }
 
    /**
-    * Creates a Connection Factory instance. 
+    * Creates a Connection Factory instance.
     *
     * @return EIS-specific Connection Factory instance or javax.resource.cci.ConnectionFactory instance
     * @throws ResourceException Generic exception
     */
-   public Object createConnectionFactory() throws ResourceException
-   {
+   public Object createConnectionFactory() throws ResourceException {
       throw new ResourceException("This resource adapter doesn't support non-managed environments");
    }
 
    /**
     * Creates a new physical connection to the underlying EIS resource manager.
     *
-    * @param subject Caller's security information
+    * @param subject       Caller's security information
     * @param cxRequestInfo Additional resource adapter specific connection request information
+    * @return ManagedConnection instance
     * @throws ResourceException generic exception
-    * @return ManagedConnection instance 
     */
    public ManagedConnection createManagedConnection(Subject subject,
-         ConnectionRequestInfo cxRequestInfo) throws ResourceException
-   {
-      log.finest("createManagedConnection()");
-      return new HttpManagedConnection(this);
+                                                    ConnectionRequestInfo cxRequestInfo) throws ResourceException {
+      LOG.finest("createManagedConnection()");
+      CloseableHttpClient httpClient = HttpClients.custom().setConnectionManager(
+          connectionManager).setRoutePlanner(routePlanner).build();
+      return new HttpManagedConnection(this, httpClient);
    }
 
    /**
-    * Returns a matched connection from the candidate set of connections. 
+    * Returns a matched connection from the candidate set of connections.
     *
     * @param connectionSet Candidate connection set
-    * @param subject Caller's security information
+    * @param subject       Caller's security information
     * @param cxRequestInfo Additional resource adapter specific connection request information
+    * @return ManagedConnection if resource adapter finds an acceptable match otherwise null
     * @throws ResourceException generic exception
-    * @return ManagedConnection if resource adapter finds an acceptable match otherwise null 
     */
    public ManagedConnection matchManagedConnections(Set connectionSet,
-         Subject subject, ConnectionRequestInfo cxRequestInfo) throws ResourceException
-   {
-      log.finest("matchManagedConnections()");
+                                                    Subject subject, ConnectionRequestInfo cxRequestInfo) 
+       throws ResourceException {
+      LOG.finest("matchManagedConnections()");
       ManagedConnection result = null;
       Iterator it = connectionSet.iterator();
-      while (result == null && it.hasNext())
-      {
-         ManagedConnection mc = (ManagedConnection)it.next();
-         if (mc instanceof HttpManagedConnection)
-         {
+      while (result == null && it.hasNext()) {
+         ManagedConnection mc = (ManagedConnection) it.next();
+         if (mc instanceof HttpManagedConnection) {
             result = mc;
          }
-
       }
       return result;
    }
@@ -187,9 +200,8 @@ public class HttpManagedConnectionFactory implements ManagedConnectionFactory, R
     * @return PrintWriter
     * @throws ResourceException generic exception
     */
-   public PrintWriter getLogWriter() throws ResourceException
-   {
-      log.finest("getLogWriter()");
+   public PrintWriter getLogWriter() throws ResourceException {
+      LOG.finest("getLogWriter()");
       return logwriter;
    }
 
@@ -199,9 +211,8 @@ public class HttpManagedConnectionFactory implements ManagedConnectionFactory, R
     * @param out PrintWriter - an out stream for error logging and tracing
     * @throws ResourceException generic exception
     */
-   public void setLogWriter(PrintWriter out) throws ResourceException
-   {
-      log.finest("setLogWriter()");
+   public void setLogWriter(final PrintWriter out) throws ResourceException {
+      LOG.finest("setLogWriter()");
       logwriter = out;
    }
 
@@ -210,95 +221,59 @@ public class HttpManagedConnectionFactory implements ManagedConnectionFactory, R
     *
     * @return The handle
     */
-   public ResourceAdapter getResourceAdapter()
-   {
-      log.finest("getResourceAdapter()");
-      return ra;
+   public ResourceAdapter getResourceAdapter() {
+      LOG.finest("getResourceAdapter()");
+      return resourceAdapter;
    }
 
    /**
     * Set the resource adapter
     *
-    * @param ra The handle
+    * @param adapter The Resource Adapter
     */
-   public void setResourceAdapter(ResourceAdapter ra)
-   {
-      log.finest("setResourceAdapter()");
-      this.ra = ra;
+   public void setResourceAdapter(final ResourceAdapter adapter) {
+      LOG.finest("setResourceAdapter()");
+      this.resourceAdapter = adapter;
    }
 
-   /** 
+   /**
     * Returns a hash code value for the object.
+    *
     * @return A hash code value for this object.
     */
    @Override
-   public int hashCode()
-   {
-      int result = 17;
-      if (host != null)
-         result += 31 * result + 7 * host.hashCode();
-      else
-         result += 31 * result + 7;
-      if (port != null)
-         result += 31 * result + 7 * port.hashCode();
-      else
-         result += 31 * result + 7;
-      if (host != null)
-         result += 31 * result + 7 * host.hashCode();
-      else
-         result += 31 * result + 7;
-      if (port != null)
-         result += 31 * result + 7 * port.hashCode();
-      else
-         result += 31 * result + 7;
-      return result;
+   public int hashCode() {
+      return new HashCodeBuilder().append(resourceAdapter).append(logwriter)
+                                  .append(host).append(port).hashCode();
    }
 
-   /** 
+   /**
     * Indicates whether some other object is equal to this one.
+    *
     * @param other The reference object with which to compare.
     * @return true if this object is the same as the obj argument, false otherwise.
     */
    @Override
-   public boolean equals(Object other)
-   {
-      if (other == null)
+   public boolean equals(final Object other) {
+      if (other == null) {
          return false;
-      if (other == this)
+      } else if (other == this) {
          return true;
-      if (!(other instanceof HttpManagedConnectionFactory))
+      } else if (!(other instanceof HttpManagedConnectionFactory)) {
          return false;
-      boolean result = true;
-      HttpManagedConnectionFactory obj = (HttpManagedConnectionFactory)other;
-      if (result)
-      {
-         if (host == null)
-            result = obj.getHost() == null;
-         else
-            result = host.equals(obj.getHost());
+      } else {
+         HttpManagedConnectionFactory managedConnection = (HttpManagedConnectionFactory) other;
+         return new EqualsBuilder()
+             .append(getHost(), managedConnection.getHost())
+             .append(getPort(), managedConnection.getPort())
+             .append(getResourceAdapter(), managedConnection.getResourceAdapter()).isEquals();
       }
-      if (result)
-      {
-         if (port == null)
-            result = obj.getPort() == null;
-         else
-            result = port.equals(obj.getPort());
-      }
-      if (result)
-      {
-         if (host == null)
-            result = obj.getHost() == null;
-         else
-            result = host.equals(obj.getHost());
-      }
-      if (result)
-      {
-         if (port == null)
-            result = obj.getPort() == null;
-         else
-            result = port.equals(obj.getPort());
-      }
-      return result;
    }
 
+   /**
+    * @return the {@link HttpClientConnectionManager} so connections can be released.
+    */
+   HttpClientConnectionManager getHttpClientConnectionManager() {
+      return connectionManager;
+   }
 }
